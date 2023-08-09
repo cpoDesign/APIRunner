@@ -78,42 +78,63 @@ namespace APITestingRunner
 
     private async Task MakeApiCall(HttpClient client)
     {
-      switch (_config.RequestType)
+      string? url = string.Empty;
+      try
       {
-        case "GET":
-
-          HttpResponseMessage response = await client.GetAsync(ComposeRequest(item));
-          string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-          ProcessResultCapture(response.StatusCode, responseContent, response.Headers);
-
-          break;
-        case "POST":
-        case "PUT":
-        case "DELETE":
-        default:
-          _errors.Add("unsupported request type");
-          break;
+        url = ComposeRequest(null);
       }
+      catch (Exception)
+      {
+        _errors.Add($"Error has occurred while composing an url: {url}");
+        return;
+      }
+
+      return await (MakeApiCorCollectionCall(client, url);
     }
 
     private async Task MakeApiCorCollectionCall(HttpClient client, DataQueryResult item)
     {
-      switch (_config.RequestType)
+      string? url = string.Empty;
+      try
       {
-        case "GET":
+        url = ComposeRequest(item);
+      }
+      catch (Exception)
+      {
+        _errors.Add($"Error has occurred while composing an url: {url}");
+        return;
+      }
 
-          HttpResponseMessage response = await client.GetAsync(ComposeRequest(item));
-          string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-          ProcessResultCapture(response.StatusCode, responseContent, response.Headers);
+      await MakeApiCorCollectionCall(client, url);
 
 
-          break;
-        case "POST":
-        case "PUT":
-        case "DELETE":
-        default:
-          _errors.Add("unsupported request type");
-          break;
+      return;
+    }
+
+    private async Task MakeApiCorCollectionCall(HttpClient client, string url)
+    {
+      try
+      {
+        switch (_config.RequestType)
+        {
+          case "GET":
+
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+            ProcessResultCapture(response.StatusCode, responseContent, response.Headers);
+
+            break;
+          case "POST":
+          case "PUT":
+          case "DELETE":
+          default:
+            _errors.Add("unsupported request type");
+            break;
+        }
+      }
+      catch (Exception ex)
+      {
+        _errors.Add($"Error occured while calling api with url{url} with message {ex.Message}");
       }
     }
 
@@ -167,7 +188,6 @@ namespace APITestingRunner
 
     internal async Task<TestRunner> PrintResults()
     {
-
       Console.WriteLine("============Status==========");
       foreach (TestResultStatus item in _resultsStats)
       {
