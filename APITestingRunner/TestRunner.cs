@@ -1,5 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Net;
+using System.Net.Http.Headers;
+
 namespace APITestingRunner
 {
   internal class TestRunner
@@ -8,6 +11,8 @@ namespace APITestingRunner
     private IEnumerable<DataQueryResult>? _dbBasedItems = new List<DataQueryResult>();
     private readonly List<string> _errors = new();
     private readonly List<string> responses = new();
+    private readonly List<TestResultStatus> _resultsStats = new();
+
     public TestRunner()
     {
     }
@@ -77,11 +82,9 @@ namespace APITestingRunner
       {
         case "GET":
 
-          HttpResponseMessage request = await client.GetAsync(ComposeRequest(null));
-
-          string response = $"{request.StatusCode} - {await request.Content.ReadAsStringAsync()}";
-          responses.Add(response);
-          Console.Write(response);
+          HttpResponseMessage response = await client.GetAsync(ComposeRequest(item));
+          string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+          ProcessResultCapture(response.StatusCode, responseContent, response.Headers);
 
           break;
         case "POST":
@@ -99,11 +102,10 @@ namespace APITestingRunner
       {
         case "GET":
 
-          HttpResponseMessage request = await client.GetAsync(ComposeRequest(item));
+          HttpResponseMessage response = await client.GetAsync(ComposeRequest(item));
+          string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+          ProcessResultCapture(response.StatusCode, responseContent, response.Headers);
 
-          string response = $"{request.StatusCode} - {await request.Content.ReadAsStringAsync()}";
-          responses.Add(response);
-          Console.WriteLine(response);
 
           break;
         case "POST":
@@ -113,6 +115,26 @@ namespace APITestingRunner
           _errors.Add("unsupported request type");
           break;
       }
+    }
+
+    private void ProcessResultCapture(HttpStatusCode statusCode, string responseContent, HttpResponseHeaders headers)
+    {
+      string response = $"{statusCode} - {responseContent}";
+
+
+      TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)statusCode);
+      if (existingResult == null)
+      {
+        _resultsStats.Add(new TestResultStatus { StatusCode = (int)statusCode, NumberOfResults = 1 });
+      }
+      else
+      {
+        existingResult.NumberOfResults++;
+      }
+
+      responses.Add(response);
+
+      Console.WriteLine(response);
     }
 
     internal string? ComposeRequest(DataQueryResult? dbData)
@@ -145,6 +167,14 @@ namespace APITestingRunner
 
     internal async Task<TestRunner> PrintResults()
     {
+
+      Console.WriteLine("============Status==========");
+      foreach (TestResultStatus item in _resultsStats)
+      {
+        Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
+      }
+
+      Console.WriteLine("============Errors==========");
       foreach (string error in _errors)
       {
         Console.WriteLine(error);
@@ -154,4 +184,10 @@ namespace APITestingRunner
       return this;
     }
   }
+
+  public class TestResultStatus
+  {
+    public int StatusCode { get; set; }
+    public int NumberOfResults { get; set; } = 0;
+  };
 }

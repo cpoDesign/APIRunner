@@ -23,7 +23,10 @@ public class Configuration
       {
         new Param("sqlId", "sqlId")
       },
-      RequestType = "GET"
+      RequestType = "GET",
+      ResultsStoreOption = StoreResultsOption.All,
+
+
     };
 
     string objString = JsonSerializer.Serialize(config);
@@ -47,6 +50,23 @@ public class Configuration
     public List<Param>? DBFields { get; set; }
     public required string RequestType { get; set; }
     public required string UrlPath { get; set; }
+    public StoreResultsOption ResultsStoreOption { get; set; }
+  }
+
+  public enum StoreResultsOption
+  {
+    /// <summary>
+    /// Just run the tests
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// stores all results
+    /// </summary>
+    All = 1,
+    /// <summary>
+    /// Record only failures
+    /// </summary>
+    FailuresOnly = 2,
   }
 
   public record Param(string Name, string value);
