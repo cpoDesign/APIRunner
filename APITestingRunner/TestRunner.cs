@@ -1,8 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Net;
-using System.Net.Http.Headers;
-
 namespace APITestingRunner
 {
   internal class TestRunner
@@ -36,7 +33,7 @@ namespace APITestingRunner
 
       if (_dbBasedItems != null)
       {
-        Console.WriteLine($"Found {_dbBasedItems.Count()}");
+        Console.WriteLine($"Found {_dbBasedItems.Count()} records for test");
       }
 
       return this;
@@ -64,6 +61,8 @@ namespace APITestingRunner
         //http://localhost:5152/Data?id=1
         foreach (DataQueryResult item in _dbBasedItems)
         {
+          Console.WriteLine($"proceeding with call for record {item.RowId}");
+
           await MakeApiCorCollectionCall(client, item);
         }
       }
@@ -89,7 +88,8 @@ namespace APITestingRunner
         return;
       }
 
-      return await (MakeApiCorCollectionCall(client, url);
+      await MakeApiCorCollectionCall(client, url);
+      return;
     }
 
     private async Task MakeApiCorCollectionCall(HttpClient client, DataQueryResult item)
@@ -105,13 +105,13 @@ namespace APITestingRunner
         return;
       }
 
-      await MakeApiCorCollectionCall(client, url);
+      await MakeApiCorCollectionCall(client, url, item);
 
 
       return;
     }
 
-    private async Task MakeApiCorCollectionCall(HttpClient client, string url)
+    private async Task MakeApiCorCollectionCall(HttpClient client, string url, DataQueryResult? item = null)
     {
       try
       {
@@ -121,7 +121,7 @@ namespace APITestingRunner
 
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-            ProcessResultCapture(response.StatusCode, responseContent, response.Headers);
+            ProcessResultCapture(new ApiCallResult(response.StatusCode, responseContent, response.Headers, url, item));
 
             break;
           case "POST":
@@ -138,15 +138,19 @@ namespace APITestingRunner
       }
     }
 
-    private void ProcessResultCapture(HttpStatusCode statusCode, string responseContent, HttpResponseHeaders headers)
+    private async void ProcessResultCapture(ApiCallResult apiCallResult)
     {
-      string response = $"{statusCode} - {responseContent}";
+      string response = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
+      if (_config.LogLocation != null)
+      {
 
+        logIntoFile(_config.LogLocation, apiCallResult);
+      }
 
-      TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)statusCode);
+      TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)apiCallResult.statusCode);
       if (existingResult == null)
       {
-        _resultsStats.Add(new TestResultStatus { StatusCode = (int)statusCode, NumberOfResults = 1 });
+        _resultsStats.Add(new TestResultStatus { StatusCode = (int)apiCallResult.statusCode, NumberOfResults = 1 });
       }
       else
       {
@@ -154,8 +158,26 @@ namespace APITestingRunner
       }
 
       responses.Add(response);
+      await Task.CompletedTask;
 
       Console.WriteLine(response);
+    }
+
+    private void logIntoFile(string logLocation, ApiCallResult apiCallResult)
+    {
+      try
+      {
+        string resultsDirectory = Path.Combine(logLocation, "Results");
+        if (!Directory.Exists(resultsDirectory))
+        {
+          _ = Directory.CreateDirectory(resultsDirectory);
+        }
+
+        _ = new FileOperations().WriteFile(resultsDirectory, $"request{apiCallResult.item?.RowId}", apiCallResult);
+      }
+      catch
+      {
+      }
     }
 
     internal string? ComposeRequest(DataQueryResult? dbData)
@@ -188,13 +210,13 @@ namespace APITestingRunner
 
     internal async Task<TestRunner> PrintResults()
     {
-      Console.WriteLine("============Status==========");
+      Console.WriteLine("==========Status==========");
       foreach (TestResultStatus item in _resultsStats)
       {
         Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
       }
 
-      Console.WriteLine("============Errors==========");
+      Console.WriteLine("==========Errors==========");
       foreach (string error in _errors)
       {
         Console.WriteLine(error);

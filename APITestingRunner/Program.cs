@@ -47,7 +47,10 @@ namespace APITestingRunner
 
       string pathConfigJson = $"{DirectoryServices.AssemblyDirectory}\\config.json";
 
-      Configuration config = new();
+      Configuration config = new()
+      {
+        LogLocation = DirectoryServices.AssemblyDirectory
+      };
 
       while (true)
       {
@@ -64,7 +67,7 @@ namespace APITestingRunner
 
         if (CreateConfig)
         {
-          await IndividualActions.CreateConfig(pathConfigJson);
+          await IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson);
         }
 
         await IndividualActions.RunTests(pathConfigJson);
@@ -75,13 +78,13 @@ namespace APITestingRunner
 
   public class IndividualActions
   {
-    public static async Task CreateConfig(string pathConfigJson)
+    public static async Task CreateConfig(string directory, string pathConfigJson)
     {
 
       Configuration config = new();
       {
         Console.WriteLine($"Created config on path: {pathConfigJson}");
-        await config.CreateConfig(pathConfigJson);
+        await config.CreateConfig(directory, pathConfigJson);
         return;
       }
     }

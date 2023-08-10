@@ -1,9 +1,11 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Text.Json;
 
-public class Configuration
+public partial class Configuration
 {
-  public async Task CreateConfig(string path)
+  public string? LogLocation { get; internal set; }
+
+  public async Task CreateConfig(string path, string pathConfigJson)
   {
     Config config = new()
     {
@@ -25,13 +27,12 @@ public class Configuration
       },
       RequestType = "GET",
       ResultsStoreOption = StoreResultsOption.All,
-
-
+      LogLocation = path
     };
 
     string objString = JsonSerializer.Serialize(config);
 
-    await File.WriteAllTextAsync(path, objString);
+    await File.WriteAllTextAsync(pathConfigJson, objString);
   }
 
   public async Task<Config?> GetConfigAsync(string path)
@@ -51,6 +52,12 @@ public class Configuration
     public required string RequestType { get; set; }
     public required string UrlPath { get; set; }
     public StoreResultsOption ResultsStoreOption { get; set; }
+
+    /// <summary>
+    /// Location where responses will be stored.
+    /// Can be null and if yes no responses will be stored even if StoreResults is enabled
+    /// </summary>
+    public string? LogLocation { get; set; }
   }
 
   public enum StoreResultsOption
