@@ -29,5 +29,19 @@ namespace SampleAPI.Controllers
       })
       .ToArray();
     }
+
+    [Route("GetWeatherForecastForLocation")]
+    [HttpGet()]
+    public IEnumerable<WeatherForecast> GetWeatherForecastForLocation(string location)
+    {
+      bool checkForLocation = !string.IsNullOrWhiteSpace(location);
+      return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+      {
+        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+        TemperatureC = Random.Shared.Next(-20, 55),
+        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+      })
+      .ToArray();
+    }
   }
 }

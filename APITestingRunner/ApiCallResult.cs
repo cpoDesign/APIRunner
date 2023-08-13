@@ -5,7 +5,8 @@ using System.Net.Http.Headers;
 
 namespace APITestingRunner
 {
-  public record ApiCallResult(HttpStatusCode statusCode, string responseContent, HttpResponseHeaders headers, string url, DataQueryResult? item)
+  public record ApiCallResult(HttpStatusCode statusCode, string responseContent, HttpResponseHeaders headers, string url, DataQueryResult? item,
+    bool IsSuccessStatusCode, List<string>? CompareResults = null)
   {
 
   }

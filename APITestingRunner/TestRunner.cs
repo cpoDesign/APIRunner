@@ -4,17 +4,19 @@ namespace APITestingRunner
 {
   internal class TestRunner
   {
-    private Configuration.Config _config;
+    private Config _config;
     private IEnumerable<DataQueryResult>? _dbBasedItems = new List<DataQueryResult>();
     private readonly List<string> _errors = new();
     private readonly List<string> responses = new();
     private readonly List<TestResultStatus> _resultsStats = new();
+    private HttpClient? compareClient = null;
+    private string? compareUrl;
 
     public TestRunner()
     {
     }
 
-    internal TestRunner ApplyConfig(Configuration.Config? configSettings)
+    internal async Task ApplyConfig(Config? configSettings)
     {
       if (configSettings == null)
       {
@@ -22,7 +24,7 @@ namespace APITestingRunner
       }
 
       _config = configSettings;
-      return this;
+      await Task.CompletedTask;
     }
 
     internal async Task<TestRunner> GetTestRunnerDbSet()
@@ -48,9 +50,18 @@ namespace APITestingRunner
         BaseAddress = new Uri(_config.UrlBase)
       };
 
+
+      if (!string.IsNullOrWhiteSpace(_config.CompareUrlBase))
+      {
+        compareClient = new()
+        {
+          BaseAddress = new Uri(_config.UrlBase)
+        };
+      }
+
       if (_config.HeaderParam != null && _config.HeaderParam.Count > 0)
       {
-        foreach (Configuration.Param item in _config.HeaderParam)
+        foreach (ConfigurationManager.Param item in _config.HeaderParam)
         {
           client.DefaultRequestHeaders.Add(item.Name, item.value);
         }
@@ -80,7 +91,12 @@ namespace APITestingRunner
       string? url = string.Empty;
       try
       {
-        url = ComposeRequest(null);
+        url = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, null);
+
+        if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
+        {
+          compareUrl = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.CompareUrlPath, _config, null);
+        }
       }
       catch (Exception)
       {
@@ -97,7 +113,11 @@ namespace APITestingRunner
       string? url = string.Empty;
       try
       {
-        url = ComposeRequest(item);
+        url = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, item);
+        if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
+        {
+          compareUrl = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.CompareUrlPath, _config, item);
+        }
       }
       catch (Exception)
       {
@@ -117,54 +137,119 @@ namespace APITestingRunner
       {
         switch (_config.RequestType)
         {
-          case "GET":
+          case ConfigurationManager.RequestType.GET:
 
             HttpResponseMessage response = await client.GetAsync(url);
-            string responseContent = $"{response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-            ProcessResultCapture(new ApiCallResult(response.StatusCode, responseContent, response.Headers, url, item));
+
+            string content = await response.Content.ReadAsStringAsync();
+
+
+            if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
+            {
+              List<string> compareList = new();
+
+              if (compareClient != null)
+              {
+                HttpResponseMessage compareResponse = await compareClient.GetAsync(compareUrl);
+
+                string responseCompareContent = await response.Content.ReadAsStringAsync();
+
+
+                // compare status code
+                if (response.StatusCode == compareResponse.StatusCode)
+                {
+                  compareList.Add($"Status code SourceAPI: {response.StatusCode} CompareAPI: {response.StatusCode}");
+                }
+
+                // compare content
+                if (content != responseCompareContent)
+                {
+                  compareList.Add("APIs content does not match");
+                }
+
+                if (compareList.Count == 0)
+                {
+                  Console.ForegroundColor = ConsoleColor.Green;
+                  Console.WriteLine($"Comparing API for {item?.RowId} success");
+                }
+                else
+                {
+                  Console.Write($"Comparing API for {item?.RowId} Failed");
+                  foreach (string errorsInComparrison in compareList)
+                  {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"- {errorsInComparrison}");
+                  }
+                }
+
+                Console.ForegroundColor = ConsoleColor.White;
+
+                _ = ProcessResultCapture(new ApiCallResult(compareResponse.StatusCode, responseCompareContent, compareResponse.Headers, url, item, compareResponse.IsSuccessStatusCode), true);
+              }
+              else
+              {
+                _errors.Add("Failed to find configuration for compare API");
+              }
+            }
+
+            await ProcessResultCapture(new ApiCallResult(response.StatusCode, content, response.Headers, url, item, response.IsSuccessStatusCode));
 
             break;
-          case "POST":
-          case "PUT":
-          case "DELETE":
+          case ConfigurationManager.RequestType.POST:
+          case ConfigurationManager.RequestType.PUT:
+          case ConfigurationManager.RequestType.DELETE:
           default:
-            _errors.Add("unsupported request type");
+            _errors.Add("Unsupported request type");
             break;
         }
       }
       catch (Exception ex)
       {
-        _errors.Add($"Error occured while calling api with url{url} with message {ex.Message}");
+        _errors.Add($"Error has occurred while calling api with url:{url} with message: {ex.Message}");
       }
     }
 
-    private async void ProcessResultCapture(ApiCallResult apiCallResult)
+    private async Task ProcessResultCapture(ApiCallResult apiCallResult, bool IsCompareFile = false)
     {
       string response = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
-      if (_config.LogLocation != null)
-      {
 
-        logIntoFile(_config.LogLocation, apiCallResult);
+
+      if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture)
+      {
+        if (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.All || (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode))
+        {
+          if (_config.LogLocation != null)
+          {
+            await logIntoFileAsync(_config.LogLocation, apiCallResult, IsCompareFile);
+          }
+          else
+          {
+            _errors.Add("No logLocation found");
+          }
+        }
       }
 
-      TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)apiCallResult.statusCode);
-      if (existingResult == null)
+      if (!IsCompareFile)
       {
-        _resultsStats.Add(new TestResultStatus { StatusCode = (int)apiCallResult.statusCode, NumberOfResults = 1 });
-      }
-      else
-      {
-        existingResult.NumberOfResults++;
-      }
+        TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)apiCallResult.statusCode);
+        if (existingResult == null)
+        {
+          _resultsStats.Add(new TestResultStatus { StatusCode = (int)apiCallResult.statusCode, NumberOfResults = 1 });
+        }
+        else
+        {
+          existingResult.NumberOfResults++;
+        }
 
-      responses.Add(response);
-      await Task.CompletedTask;
+        responses.Add(response);
+      }
 
       Console.WriteLine(response);
     }
 
-    private void logIntoFile(string logLocation, ApiCallResult apiCallResult)
+    private async Task logIntoFileAsync(string logLocation, ApiCallResult apiCallResult, bool IsCompareFile)
     {
+      string filePrefix = "request";
       try
       {
         string resultsDirectory = Path.Combine(logLocation, "Results");
@@ -173,39 +258,17 @@ namespace APITestingRunner
           _ = Directory.CreateDirectory(resultsDirectory);
         }
 
-        _ = new FileOperations().WriteFile(resultsDirectory, $"request{apiCallResult.item?.RowId}", apiCallResult);
+        string fileName = $"{filePrefix}-{apiCallResult.item?.RowId}";
+        if (IsCompareFile)
+        {
+          fileName += "Compare";
+        }
+
+        await new FileOperations().WriteFile(resultsDirectory, $"{fileName}.json", apiCallResult);
       }
       catch
       {
       }
-    }
-
-    internal string? ComposeRequest(DataQueryResult? dbData)
-    {
-      string arguments = $"{_config.UrlPath}?";
-      foreach (Configuration.Param item in _config.UrlParam)
-      {
-        arguments += $"{item.Name}=";
-
-        //check if item value is listed in dbfields, if yes we have mapping to value from database otherwise  just use value
-        if (_config.DBFields.Any(x => x.value == item.value) && dbData != null)
-        {
-          //replace value from dbData object
-          KeyValuePair<string, string> dbResultFound = dbData.Results.FirstOrDefault(x => x.Key == item.value);
-
-          arguments += $"{dbResultFound.Value}";
-
-        }
-        else
-        {
-          // no match found in parameters 
-          arguments += $"{item.value}";
-        }
-
-        arguments += "&";
-      }
-
-      return arguments;
     }
 
     internal async Task<TestRunner> PrintResults()
@@ -216,20 +279,17 @@ namespace APITestingRunner
         Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
       }
 
-      Console.WriteLine("==========Errors==========");
-      foreach (string error in _errors)
+      if (_errors.Count > 0)
       {
-        Console.WriteLine(error);
+        Console.WriteLine("==========Errors==========");
+        foreach (string error in _errors)
+        {
+          Console.WriteLine(error);
+        }
       }
 
       await Task.CompletedTask;
       return this;
     }
   }
-
-  public class TestResultStatus
-  {
-    public int StatusCode { get; set; }
-    public int NumberOfResults { get; set; } = 0;
-  };
 }

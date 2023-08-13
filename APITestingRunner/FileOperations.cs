@@ -12,6 +12,13 @@ namespace APITestingRunner
       throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Expected file with extension.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="fileName"></param>
+    /// <param name="apiCallResult"></param>
+    /// <returns></returns>
     internal async Task WriteFile(string path, string fileName, ApiCallResult apiCallResult)
     {
       string objString = JsonSerializer.Serialize(apiCallResult);
