@@ -24,6 +24,7 @@ namespace APITestingRunner.Unit.Tests
         HeaderParam = new List<Param> {
         new Param("accept","application/json")
       },
+        RequestBody = null,
         DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
         DBQuery = "select id as sqlId from dbo.sampleTable;",
         DBFields = new List<Param>

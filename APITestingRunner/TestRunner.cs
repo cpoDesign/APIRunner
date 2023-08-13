@@ -1,5 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Net.Mime;
+using System.Text;
+
 namespace APITestingRunner
 {
   internal class TestRunner
@@ -131,15 +134,31 @@ namespace APITestingRunner
       return;
     }
 
-    private async Task MakeApiCorCollectionCall(HttpClient client, string url, DataQueryResult? item = null)
+    private async Task MakeApiCorCollectionCall(HttpClient client, string url, DataQueryResult? item = null, string requestBody = "")
     {
+      HttpResponseMessage response;
       try
       {
         switch (_config.RequestType)
         {
           case ConfigurationManager.RequestType.GET:
 
-            HttpResponseMessage response = await client.GetAsync(url);
+            if (!string.IsNullOrWhiteSpace(requestBody))
+            {
+
+              HttpRequestMessage request = new()
+              {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(url),
+                Content = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json /* or "application/json" in older versions */),
+              };
+
+              response = await client.SendAsync(request);
+            }
+            else
+            {
+              response = await client.GetAsync(url);
+            }
 
             string content = await response.Content.ReadAsStringAsync();
 

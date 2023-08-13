@@ -21,7 +21,7 @@ public class Config
   /// <summary>
   /// Contains a compare url path. Allows user to point to the same api under different name.
   /// </summary>
-  public string CompareUrlPath { get; set; }
+  public required string CompareUrlPath { get; set; }
 
   /// <summary>
   /// Any query parameters api requires
@@ -31,6 +31,11 @@ public class Config
   /// Any headers the api requires
   /// </summary>
   public required List<Param> HeaderParam { get; set; }
+
+  /// <summary>
+  /// Request body optional. When present the replace values will apply the same way like for url.
+  /// </summary>
+  public string? RequestBody { get; set; }
 
   /// <summary>
   /// What type of HTTP verb to use

@@ -101,11 +101,21 @@ namespace APITestingRunner
         //await IndividualActions.RunTests(pathConfigJson);
         //Console.WriteLine("======================");
 
+        //Console.ReadLine();
+
+        //Console.WriteLine("==========CreateConfigForDatabaseBasedAPIComparrisonCall============");
+
+        //CreateConfigForDatabaseBasedAPIComparrisonCall(pathConfigJson, StoreResultsOption.None);
+
+        //await IndividualActions.RunTests(pathConfigJson);
+
+        //Console.WriteLine("======================");
+
         Console.ReadLine();
 
         Console.WriteLine("==========CreateConfigForDatabaseBasedAPIComparrisonCall============");
 
-        CreateConfigForDatabaseBasedAPIComparrisonCall(pathConfigJson, StoreResultsOption.None);
+        CreateConfigForSingleAPICallWithUrlParamAndBodyModel(pathConfigJson);
 
         await IndividualActions.RunTests(pathConfigJson);
 
@@ -126,6 +136,7 @@ namespace APITestingRunner
         CompareUrlPath = string.Empty,
         UrlPath = "/WeatherForecast",
         UrlParam = null,
+        RequestBody = null,
 
         HeaderParam = new List<Param> {
         new Param("accept","application/json")
@@ -157,6 +168,7 @@ namespace APITestingRunner
         HeaderParam = new List<Param> {
         new Param("accept","application/json")
       },
+        RequestBody = null,
         DBConnectionString = null,
         DBQuery = null,
         DBFields = null,
@@ -186,6 +198,7 @@ namespace APITestingRunner
         HeaderParam = new List<Param> {
         new Param("accept","application/json")
       },
+        RequestBody = null,
         DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
         DBQuery = "select id as sqlId from dbo.sampleTable;",
         DBFields = new List<Param>
@@ -217,6 +230,7 @@ namespace APITestingRunner
         HeaderParam = new List<Param> {
         new Param("accept","application/json")
       },
+        RequestBody = null,
         DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
         DBQuery = "select id as sqlId from dbo.sampleTable;",
         DBFields = new List<Param>
@@ -248,6 +262,7 @@ namespace APITestingRunner
         HeaderParam = new List<Param> {
         new Param("accept","application/json")
       },
+        RequestBody = null,
         DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
         DBQuery = "select id as sqlId from dbo.sampleTable;",
         DBFields = new List<Param>
@@ -257,6 +272,35 @@ namespace APITestingRunner
         RequestType = RequestType.GET,
         ResultsStoreOption = storeResultsOption,
         ConfigMode = TesterConfigMode.APICompare,
+        LogLocation = DirectoryServices.AssemblyDirectory
+      };
+
+      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
+    }
+
+
+    private static void CreateConfigForSingleAPICallWithUrlParamAndBodyModel(string pathConfigJson)
+    {
+      Config config = new()
+      {
+        UrlBase = "https://localhost:7055",
+        CompareUrlBase = string.Empty,
+        CompareUrlPath = string.Empty,
+        UrlPath = "/datamodel/123456789",
+        UrlParam = new List<Param>
+        {
+          new Param("location","UK")
+        },
+        HeaderParam = new List<Param> {
+        new Param("accept","application/json")
+      },
+        RequestBody = "{Id={sqlId},StaticData=\"data\"}",
+        DBConnectionString = null,
+        DBQuery = null,
+        DBFields = null,
+        RequestType = RequestType.GET,
+        ResultsStoreOption = StoreResultsOption.None,
+        ConfigMode = TesterConfigMode.Run,
         LogLocation = DirectoryServices.AssemblyDirectory
       };
 
