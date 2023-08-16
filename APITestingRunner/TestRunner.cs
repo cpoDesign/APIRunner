@@ -136,96 +136,106 @@ namespace APITestingRunner
 
     private async Task MakeApiCorCollectionCall(HttpClient client, string url, DataQueryResult? item = null, string requestBody = "")
     {
-      HttpResponseMessage response;
+      HttpResponseMessage? response = null;
       try
       {
+
         switch (_config.RequestType)
         {
           case ConfigurationManager.RequestType.GET:
 
-            if (!string.IsNullOrWhiteSpace(requestBody))
+            HttpRequestMessage request = new()
             {
+              Method = HttpMethod.Get,
+              RequestUri = new Uri(url),
+              Content = CreateRequestContent(requestBody)
+            };
 
-              HttpRequestMessage request = new()
-              {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(url),
-                Content = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json /* or "application/json" in older versions */),
-              };
-
-              response = await client.SendAsync(request);
-            }
-            else
-            {
-              response = await client.GetAsync(url);
-            }
-
-            string content = await response.Content.ReadAsStringAsync();
-
-
-            if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
-            {
-              List<string> compareList = new();
-
-              if (compareClient != null)
-              {
-                HttpResponseMessage compareResponse = await compareClient.GetAsync(compareUrl);
-
-                string responseCompareContent = await response.Content.ReadAsStringAsync();
-
-
-                // compare status code
-                if (response.StatusCode == compareResponse.StatusCode)
-                {
-                  compareList.Add($"Status code SourceAPI: {response.StatusCode} CompareAPI: {response.StatusCode}");
-                }
-
-                // compare content
-                if (content != responseCompareContent)
-                {
-                  compareList.Add("APIs content does not match");
-                }
-
-                if (compareList.Count == 0)
-                {
-                  Console.ForegroundColor = ConsoleColor.Green;
-                  Console.WriteLine($"Comparing API for {item?.RowId} success");
-                }
-                else
-                {
-                  Console.Write($"Comparing API for {item?.RowId} Failed");
-                  foreach (string errorsInComparrison in compareList)
-                  {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"- {errorsInComparrison}");
-                  }
-                }
-
-                Console.ForegroundColor = ConsoleColor.White;
-
-                _ = ProcessResultCapture(new ApiCallResult(compareResponse.StatusCode, responseCompareContent, compareResponse.Headers, url, item, compareResponse.IsSuccessStatusCode), true);
-              }
-              else
-              {
-                _errors.Add("Failed to find configuration for compare API");
-              }
-            }
-
-            await ProcessResultCapture(new ApiCallResult(response.StatusCode, content, response.Headers, url, item, response.IsSuccessStatusCode));
+            response = !string.IsNullOrWhiteSpace(requestBody) ? await client.SendAsync(request) : await client.GetAsync(url);
 
             break;
           case ConfigurationManager.RequestType.POST:
+
+            response = await client.PostAsync(url, CreateRequestContent(requestBody));
+            break;
           case ConfigurationManager.RequestType.PUT:
+            response = await client.PutAsync(url, CreateRequestContent(requestBody));
+            break;
+          case ConfigurationManager.RequestType.PATCH:
+            response = await client.PatchAsync(url, CreateRequestContent(requestBody));
+            break;
           case ConfigurationManager.RequestType.DELETE:
+            response = await client.DeleteAsync(url);
+            break;
           default:
             _errors.Add("Unsupported request type");
             break;
+        }
+
+        if (response != null)
+        {
+          string content = await response.Content.ReadAsStringAsync();
+
+          if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
+          {
+            List<string> compareList = new();
+
+            if (compareClient != null)
+            {
+              HttpResponseMessage compareResponse = await compareClient.GetAsync(compareUrl);
+
+              string responseCompareContent = await response.Content.ReadAsStringAsync();
+
+
+              // compare status code
+              if (response.StatusCode == compareResponse.StatusCode)
+              {
+                compareList.Add($"Status code SourceAPI: {response.StatusCode} CompareAPI: {response.StatusCode}");
+              }
+
+              // compare content
+              if (content != responseCompareContent)
+              {
+                compareList.Add("APIs content does not match");
+              }
+
+              if (compareList.Count == 0)
+              {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Comparing API for {item?.RowId} success");
+              }
+              else
+              {
+                Console.Write($"Comparing API for {item?.RowId} Failed");
+                foreach (string errorsInComparrison in compareList)
+                {
+                  Console.ForegroundColor = ConsoleColor.Red;
+                  Console.WriteLine($"- {errorsInComparrison}");
+                }
+              }
+
+              Console.ForegroundColor = ConsoleColor.White;
+
+              _ = ProcessResultCapture(new ApiCallResult(compareResponse.StatusCode, responseCompareContent, compareResponse.Headers, url, item, compareResponse.IsSuccessStatusCode), true);
+            }
+
+            await ProcessResultCapture(new ApiCallResult(response.StatusCode, content, response.Headers, url, item, response.IsSuccessStatusCode));
+          }
+          else
+          {
+            _errors.Add("Failed to find configuration for compare API");
+          }
         }
       }
       catch (Exception ex)
       {
         _errors.Add($"Error has occurred while calling api with url:{url} with message: {ex.Message}");
       }
+    }
+
+    private static StringContent CreateRequestContent(string requestBody)
+    {
+      return new(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
     }
 
     private async Task ProcessResultCapture(ApiCallResult apiCallResult, bool IsCompareFile = false)

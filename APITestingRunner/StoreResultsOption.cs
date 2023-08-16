@@ -2,6 +2,9 @@
 
 public partial class ConfigurationManager
 {
+  /// <summary>
+  /// Options to to store the results for the response
+  /// </summary>
   public enum StoreResultsOption
   {
     /// <summary>
@@ -16,13 +19,5 @@ public partial class ConfigurationManager
     /// Record only failures
     /// </summary>
     FailuresOnly = 2,
-  }
-
-  public enum RequestType
-  {
-    GET = 1,
-    POST = 2,
-    PUT = 3,
-    DELETE = 4,
   }
 }

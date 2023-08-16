@@ -14,7 +14,7 @@ public class Config
   public required string CompareUrlBase { get; set; }
 
   /// <summary>
-  /// Relative path for the client
+  /// Relative path for the client.
   /// </summary>
   public required string UrlPath { get; set; }
 
@@ -24,7 +24,7 @@ public class Config
   public required string CompareUrlPath { get; set; }
 
   /// <summary>
-  /// Any query parameters api requires
+  /// Any query parameters api requires.
   /// </summary>
   public required List<Param> UrlParam { get; set; }
   /// <summary>
@@ -38,7 +38,7 @@ public class Config
   public string? RequestBody { get; set; }
 
   /// <summary>
-  /// What type of HTTP verb to use
+  /// What type of HTTP verb to use for the API call.
   /// </summary>
   public required RequestType RequestType { get; set; }
 
@@ -58,7 +58,18 @@ public class Config
   /// </summary>
   public string? LogLocation { get; set; }
 
+  /// <summary>
+  /// Database connection string to target your database source.
+  /// </summary>
   public string? DBConnectionString { get; set; }
+
+  /// <summary>
+  /// Query to generate the data to use for data generation for api arguments.
+  /// </summary>
   public string? DBQuery { get; set; }
+
+  /// <summary>
+  /// Database fields mapping to parameters
+  /// </summary>
   public List<Param>? DBFields { get; set; }
 }
