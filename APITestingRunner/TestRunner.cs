@@ -2,10 +2,14 @@
 
 using System.Net.Mime;
 using System.Text;
+using APITestingRunner.ApiRequest;
+using APITestingRunner.Database;
+using APITestingRunner.IoOperations;
+using APITestingRunner.TestResults;
 
 namespace APITestingRunner
 {
-  internal class TestRunner
+    internal class TestRunner
   {
     private Config _config;
     private IEnumerable<DataQueryResult>? _dbBasedItems = new List<DataQueryResult>();
@@ -47,7 +51,7 @@ namespace APITestingRunner
     internal async Task<TestRunner> RunTestsAsync()
     {
       // create a request to the api
-
+      //TODO: conver to HTTPFactory to produce api calls
       HttpClient client = new()
       {
         BaseAddress = new Uri(_config.UrlBase)
@@ -107,7 +111,7 @@ namespace APITestingRunner
         return;
       }
 
-      await MakeApiCorCollectionCall(client, url);
+      await MakeApiForCollectionCall(client, url);
       return;
     }
 
@@ -128,13 +132,13 @@ namespace APITestingRunner
         return;
       }
 
-      await MakeApiCorCollectionCall(client, url, item);
+      await MakeApiForCollectionCall(client, url, item);
 
 
       return;
     }
 
-    private async Task MakeApiCorCollectionCall(HttpClient client, string url, DataQueryResult? item = null, string requestBody = "")
+    private async Task MakeApiForCollectionCall(HttpClient client, string url, DataQueryResult? item = null, string requestBody = "")
     {
       HttpResponseMessage? response = null;
       try
@@ -300,7 +304,7 @@ namespace APITestingRunner
       }
     }
 
-    internal async Task<TestRunner> PrintResults()
+    internal async Task<TestRunner> PrintResultsSummary()
     {
       Console.WriteLine("==========Status==========");
       foreach (TestResultStatus item in _resultsStats)

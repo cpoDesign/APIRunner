@@ -1,8 +1,10 @@
-﻿using static ConfigurationManager;
+﻿using APITestingRunner.Database;
+using APITestingRunner.Excetions;
+using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests
 {
-  [TestClass]
+    [TestClass]
   public class DataAccessTests
   {
     private Config? _config;
