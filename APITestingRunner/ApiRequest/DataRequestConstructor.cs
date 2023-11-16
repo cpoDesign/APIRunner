@@ -6,11 +6,26 @@ namespace APITestingRunner.ApiRequest
 {
     public class DataRequestConstructor
     {
-        public string? ComposeUrlAddressForRequest(string urlPath, Config _config, DataQueryResult? dbData)
+        private string _baseUrl;
+        private string _relativeUrl;
+
+        /// <summary>
+        /// Uset to compose url based on dataquery result. Used to create data driven URL
+        /// </summary>
+        /// <param name="urlPath">Endpoint url|/param>
+        /// <param name="_config">Instance of configuration parameters</param>
+        /// <param name="dbData">Data from database used to merge to create a data driven url</param>
+        /// <returns>Instance of object</returns>
+        public DataRequestConstructor ComposeUrlAddressForRequest(string urlPath, Config _config, DataQueryResult? dbData)
         {
+            if (!string.IsNullOrWhiteSpace(urlPath))
+            {
+                _relativeUrl = urlPath;
+            }
+
             if (_config.UrlParam == null || _config.UrlParam.Count() == 0)
             {
-                return urlPath;
+                return this;
             }
 
             bool isFirst = true;
@@ -51,7 +66,25 @@ namespace APITestingRunner.ApiRequest
                 }
             }
 
-            return urlPath;
+            _relativeUrl = urlPath;
+            return this;
+        }
+
+        public DataRequestConstructor AddBaseUrl(string urlBase)
+        {
+            _baseUrl = urlBase;
+
+            return this;
+        }
+
+        public string GetPathAndQuery()
+        {
+            return _relativeUrl;
+        }
+
+        public string? GetFullUrl()
+        {
+            return $"{_baseUrl}{_relativeUrl}";
         }
     }
 }

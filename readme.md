@@ -1,5 +1,63 @@
 
 
+
+##
+
+Modes for the implementation
+
+
+## Configuration fields
+
+|Key|Required|Value|
+|--|--|--|
+|UrlBase|Yes | Location where to make api call to|
+|HeaderParam|no| Appends header information to the API requirest|
+|OutputLocation|Conditional|Location where captured logs are stored. Depends on ConfigMode = Capture or FileCaptureAndCompare|
+
+### TesterConfigMode types
+
+|Type|ConfigValue|UseCase|
+|--|--|--|
+|Run |1|Runs the tests only and shows result as overview.|
+|Capture|2|Runs the tests and capture the results. Process will fail in case the file already exists. |
+|FileCaptureAndCompare|3|Calls APIs and store result. If file already exists then it wil also compare output from a api with stored file.|
+|APICompare|4|Not implemented yet. Realtime compare. Compares the results of two APIs. Good for regression testing of APIs.|
+
+#### RUN
+
+takes the configuration and only execute a call against the api
+Reports success to the api as
+
+Example of the test:
+```bash
+api base url: http://localhost:7071/
+
+1.  /Data		OK success
+2.  /Data/1		OK success
+```
+
+
+### TesterConfigMode
+
+    /// <summary>
+    /// Runs the tests only and shows result as overview.
+    /// </summary>
+    Run = 1,
+    /// <summary>
+    /// Runs the tests and capture the results.
+    /// </summary>
+    Capture = 2,
+    /// <summary>
+    /// Calls APIs and compare to a stored file.
+    /// </summary>
+    FileCompare = 3,
+    /// <summary>
+    /// Realtime compare. Compares the results of two APIs. 
+    /// Good for regression testing of APIs.
+    /// </summary>
+    APICompare = 4
+
+
 ## Docker SQL test
 
 ```bash
