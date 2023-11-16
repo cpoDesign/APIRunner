@@ -1,19 +1,16 @@
 ﻿using APITestingRunner.Database;
 using APITestingRunner.Excetions;
+using FluentAssertions;
 using static ConfigurationManager;
 
-namespace APITestingRunner.Unit.Tests
-{
+namespace APITestingRunner.Unit.Tests {
     [TestClass]
-    public class DataAccessTests
-    {
+    public class DataAccessTests {
         private Config? _config;
 
         [TestInitialize]
-        public void TestInit()
-        {
-            _config = new()
-            {
+        public void TestInit() {
+            _config = new() {
                 UrlBase = "http://localhost:5152/",
                 CompareUrlBase = string.Empty,
                 CompareUrlPath = string.Empty,
@@ -41,36 +38,111 @@ namespace APITestingRunner.Unit.Tests
         }
 
         [TestMethod]
-        public void DataAccess_Tests_ConstructorShouldPass()
-        {
+        public void DataAccess_Tests_ConstructorShouldPass() {
             _ = new DataAccess(_config);
         }
 
         [TestMethod]
-        public void DataAccess_Tests_ConstructorShouldThrowArgumentNullException()
-        {
+        public void DataAccess_Tests_ConstructorShouldThrowArgumentNullException() {
             _ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(null));
         }
 
         [TestMethod]
-        public async Task FetchDataForRunnerAsync_PassNullForConnectionString_shouldThrowConfigurationErrorsException()
-        {
+        public async Task FetchDataForRunnerAsync_PassNullForConnectionString_shouldThrowConfigurationErrorsException() {
             Config testConfig = _config;
-            try
-            {
+            try {
                 testConfig.DBConnectionString = null;
                 DataAccess da = new(testConfig);
                 _ = await da.FetchDataForRunnerAsync();
                 Assert.Fail();
-            }
-            catch (TestRunnerConfigurationErrorsException ex)
-            {
+            } catch (TestRunnerConfigurationErrorsException ex) {
                 Assert.AreEqual("Failed to load connection string", ex.Message);
-            }
-            catch
-            {
+            } catch {
                 Assert.Fail();
             }
+        }
+
+        [TestMethod]
+        public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_DataSet_withOneFieldFromDbForBinder() {
+            _config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+
+
+            var data = new DataAccess(_config);
+
+            var records = await data.FetchDataForRunnerAsync();
+
+            _ = records.Should().NotBeEmpty();
+            _ = records.Should().HaveCount(3);
+
+            _ = records.Last().Should().BeEquivalentTo(new DataQueryResult {
+                RowId = 3,
+                Results = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("sqlId", "3"),
+            }
+            });
+
+            _ = records.Last().Results.Should().HaveCount(1);
+        }
+
+        [TestMethod]
+        public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_EmptyDataSet_withOneFieldFromDbForBinder() {
+            _config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+
+            _config.DBQuery = "select id as sqlId from dbo.sampleTable where id>5;";
+            var data = new DataAccess(_config);
+
+            var records = await data.FetchDataForRunnerAsync();
+
+            _ = records.Should().BeEmpty();
+        }
+
+
+        [TestMethod]
+        public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_SingleFieldDataSet_withOneFieldFromDbForBinder() {
+            _config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+
+            _config.DBQuery = "select id as sqlId, name as fieldName from dbo.sampleTable";
+            var data = new DataAccess(_config);
+
+            var records = await data.FetchDataForRunnerAsync();
+
+            _ = records.Should().NotBeEmpty();
+            _ = records.Should().HaveCount(3);
+
+            _ = records.Last().Should().BeEquivalentTo(new DataQueryResult {
+                RowId = 3,
+                Results = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("sqlId", "3"),
+            }
+            });
+
+            _ = records.Last().Results.Should().HaveCount(1);
+        }
+
+        [TestMethod]
+        public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_TwoFieldDataSet_withOneFieldFromDbForBinder() {
+            _config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+
+            _config.DBFields = new List<Param>
+      {
+        new Param("sqlId", "sqlId"),
+        new Param("fieldName", "fieldName")
+      };
+            _config.DBQuery = "select id as sqlId, name as fieldName from dbo.sampleTable";
+            var data = new DataAccess(_config);
+
+            var records = await data.FetchDataForRunnerAsync();
+
+            _ = records.Should().NotBeEmpty();
+            _ = records.Should().HaveCount(3);
+
+            _ = records.Last().Should().BeEquivalentTo(new DataQueryResult {
+                RowId = 3,
+                Results = new List<KeyValuePair<string, string>> {
+                    new KeyValuePair<string, string>("sqlId", "3"),
+                    new KeyValuePair<string, string>("fieldName", "Name 3 "),
+            }
+            });
+
+            _ = records.Last().Results.Should().HaveCount(2);
         }
     }
 }

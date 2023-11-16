@@ -8,21 +8,17 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace APITestingRunner
-{
-    public class IndividualActions
-    {
+namespace APITestingRunner {
+    public class IndividualActions {
         private ILogger _logger;
 
-        public IndividualActions AddLogger(ILogger logger)
-        {
+        public IndividualActions AddLogger(ILogger logger) {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             return this;
         }
 
-        public async Task CreateConfig(string directory, string pathConfigJson, Config config)
-        {
+        public async Task CreateConfig(string directory, string pathConfigJson, Config config) {
             ConfigurationManager configManager = new();
 
             Console.WriteLine($"Created config on path: {pathConfigJson}");
@@ -30,8 +26,7 @@ namespace APITestingRunner
             return;
 
         }
-        public async Task RunTests(string pathConfigJson)
-        {
+        public async Task RunTests(string pathConfigJson) {
             Console.WriteLine($"Loading config on path: {pathConfigJson}");
 
             ConfigurationManager configManager = new();
@@ -40,29 +35,15 @@ namespace APITestingRunner
             TestRunner testRunner = new(_logger);
             await testRunner.ApplyConfig(configSettings);
 
-
-            // execute db data load only has some data in it
-            if (!string.IsNullOrWhiteSpace(configSettings.DBConnectionString) && !string.IsNullOrWhiteSpace(configSettings.DBQuery) && configSettings.DBFields.Count() > 0)
-            {
-                testRunner = await testRunner.GetDataForTestRunnerDataSet();
-            }
-
             testRunner = await testRunner.RunTestsAsync();
 
             _ = await testRunner.PrintResultsSummary();
             return;
         }
 
-        public async Task<TestRunner> RunTests(Config config)
-        {
+        public async Task<TestRunner> RunTests(Config config) {
             TestRunner testRunner = new(_logger);
             await testRunner.ApplyConfig(config);
-
-            // execute db data load only has some data in it
-            if (!string.IsNullOrWhiteSpace(config.DBConnectionString) && !string.IsNullOrWhiteSpace(config.DBQuery) && config.DBFields.Count() > 0)
-            {
-                testRunner = await testRunner.GetDataForTestRunnerDataSet();
-            }
 
             return await testRunner.RunTestsAsync();
 
