@@ -11,13 +11,13 @@ using static ConfigurationManager;
 
 namespace APITestingRunner {
     public class TestRunner {
-        private Config _config;
+        private Config? _config;
         private readonly IEnumerable<DataQueryResult>? _dbBasedItems = new List<DataQueryResult>();
         private readonly List<string> _errors = new();
         private readonly List<string> responses = new();
         private readonly List<TestResultStatus> _resultsStats = new();
-        private readonly HttpClient? compareClient = null;
-        private readonly string? compareUrl;
+        //private readonly HttpClient? compareClient = null;
+        //private readonly string? compareUrl;
         private readonly ILogger _logger;
 
         public List<string> Errors => _errors;
@@ -35,18 +35,16 @@ namespace APITestingRunner {
             if (configSettings == null) {
                 _errors.Add("Failed to load configuration");
             } else {
-
                 _config = configSettings;
             }
 
             await Task.CompletedTask;
         }
 
-
-
         internal async Task<TestRunner> RunTestsAsync() {
-            // create a request to the api
+            _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
+            // create a request to the api
             var handler = new HttpClientHandler();
 
             handler.ServerCertificateCustomValidationCallback +=
@@ -67,7 +65,6 @@ namespace APITestingRunner {
             //    };
             //}
 
-
             PopulateClientHeadersFromConfig(client, _config.HeaderParam);
 
             await MakeApiCall(client);
@@ -76,6 +73,8 @@ namespace APITestingRunner {
         }
 
         private void PopulateClientHeadersFromConfig(HttpClient client, List<Param> headerParam) {
+            _ = _config ?? throw new ArgumentNullException(nameof(_config));
+
             if (headerParam != null && headerParam.Count > 0) {
                 foreach (ConfigurationManager.Param item in _config.HeaderParam) {
                     client.DefaultRequestHeaders.Add(item.Name, item.value);
@@ -99,9 +98,10 @@ namespace APITestingRunner {
         }
 
         public async Task<IEnumerable<DataQueryResult>> GetDataToProcessAsync() {
+            _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
             /// return data source
-            if (!string.IsNullOrWhiteSpace(_config.DBConnectionString) && !string.IsNullOrWhiteSpace(_config.DBQuery) && _config.DBFields.Count() > 0) {
+            if (!string.IsNullOrWhiteSpace(_config.DBConnectionString) && !string.IsNullOrWhiteSpace(_config.DBQuery) && _config?.DBFields?.Count() > 0) {
                 //TODO: convert to yield
                 return await new DataAccess(_config).FetchDataForRunnerAsync();
                 //yield return await db.FetchDataForRunnerAsync();
@@ -121,6 +121,8 @@ namespace APITestingRunner {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         private async Task MakeApiForCollectionCall(HttpClient client, DataQueryResult? item = null, string requestBody = "") {
+            _ = _config ?? throw new ArgumentNullException(nameof(_config));
+
             HttpResponseMessage? response = null;
             string onScreenMessage = string.Empty;
 
@@ -189,22 +191,17 @@ namespace APITestingRunner {
                         StatusCode = (int)response.StatusCode
                     });
 
-
                     onScreenMessage = GenerateResponseMessage(pathAndQuery, response);
-
                     string content = await response.Content.ReadAsStringAsync();
-
-
                     var fileName = string.Empty;
-
                     var responseHeaders = response.Headers.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString() ?? string.Empty)).ToList();
 
                     switch (_config.ConfigMode) {
                         case TesterConfigMode.Run:
                             // no another work necessary here
                             break;
-                        case TesterConfigMode.Capture:
 
+                        case TesterConfigMode.Capture:
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
                             onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
@@ -212,9 +209,8 @@ namespace APITestingRunner {
                                 new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode));
 
                             break;
+
                         case TesterConfigMode.CaptureAndCompare:
-
-
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
                             onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
@@ -291,11 +287,14 @@ namespace APITestingRunner {
 
         public string GenerateResponseMessage(string relativeUrl, HttpResponseMessage? response) {
             var determination = "fail";
-            if (response != null && response.IsSuccessStatusCode) {
-                determination = "success";
+
+            if (response is not null)
+            {
+                if (response.IsSuccessStatusCode) determination = "success";
+                return $"{relativeUrl} {(int)response.StatusCode} {determination}";
             }
 
-            return $"{relativeUrl} {(int)response.StatusCode} {determination}";
+            return $"{relativeUrl} failed to return";
         }
 
         private static StringContent CreateRequestContent(string requestBody) {
@@ -303,6 +302,8 @@ namespace APITestingRunner {
         }
 
         private async Task<ProcessingFileResult> ProcessResultCaptureAndCompareIfRequested(ApiCallResult apiCallResult) {
+            _ = _config ?? throw new ArgumentNullException(nameof(_config));
+
             _ = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
 
             ComparissonStatus fileCompareStatus = ComparissonStatus.NewFile;
@@ -342,14 +343,14 @@ namespace APITestingRunner {
         /// <param name="captureCompareFile"></param>
         /// <returns>Boolean result checking if file already exists.</returns>
         private async Task<ComparissonStatus> logIntoFileAsync(string logLocation, ApiCallResult apiCallResult, bool validateIfFilesMatch = false) {
+            _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
             string resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
             if (!Directory.Exists(resultsDirectory)) {
                 _ = Directory.CreateDirectory(resultsDirectory);
             }
 
-            ComparissonStatus status = ComparissonStatus.NewFile;
-
+            var status = ComparissonStatus.NewFile;
             var fileName = TestRunner.GenerateResultName(apiCallResult.item, _config.ResultFileNamePattern);
             var fileOperations = new FileOperations();
 
@@ -357,21 +358,14 @@ namespace APITestingRunner {
             string apiResult = JsonSerializer.Serialize(apiCallResult);
 
             if (fileOperations.ValidateIfFileExists(filePath)) {
-
-
                 var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(FileOperations.GetFileData(filePath));
 
-                status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
+                if(fileSourceResult is not null) 
+                    status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
 
                 /*
-                 
-                 
-                 API
-{"statusCode":200,"responseContent":"Hello, world!","headers":[{"Key":"Date","Value":["Sat, 18 Nov 2023 02:11:03 GMT"]},{"Key":"Server","Value":["Kestrel"]},{"Key":"Transfer-Encoding","Value":["chunked"]}],"url":"/WeatherForecast?urlKey=configKey\u0026id=1","item":{"RowId":1},"IsSuccessStatusCode":true,"CompareResults":null}
-
-from file
-
-"{\"statusCode\":200,\"responseContent\":\"Hello, world!\",\"headers\":[{\"Key\":\"Date\",\"Value\":[\"Sat, 18 Nov 2023 01:50:17 GMT\"]},{\"Key\":\"Server\",\"Value\":[\"Kestrel\"]},{\"Key\":\"Transfer-Encoding\",\"Value\":[\"chunked\"]}],\"url\":\"/WeatherForecast?urlKey=configKey\\u0026id=1\",\"item\":{\"RowId\":1},\"IsSuccessStatusCode\":true,\"CompareResults\":null}"
+                 API {"statusCode":200,"responseContent":"Hello, world!","headers":[{"Key":"Date","Value":["Sat, 18 Nov 2023 02:11:03 GMT"]},{"Key":"Server","Value":["Kestrel"]},{"Key":"Transfer-Encoding","Value":["chunked"]}],"url":"/WeatherForecast?urlKey=configKey\u0026id=1","item":{"RowId":1},"IsSuccessStatusCode":true,"CompareResults":null}
+                    from file "{\"statusCode\":200,\"responseContent\":\"Hello, world!\",\"headers\":[{\"Key\":\"Date\",\"Value\":[\"Sat, 18 Nov 2023 01:50:17 GMT\"]},{\"Key\":\"Server\",\"Value\":[\"Kestrel\"]},{\"Key\":\"Transfer-Encoding\",\"Value\":[\"chunked\"]}],\"url\":\"/WeatherForecast?urlKey=configKey\\u0026id=1\",\"item\":{\"RowId\":1},\"IsSuccessStatusCode\":true,\"CompareResults\":null}"
                  */
 
             } else {
@@ -383,7 +377,7 @@ from file
 
 
 
-        public static string GenerateResultName(DataQueryResult item, string? resultFileNamePattern = null) {
+        public static string GenerateResultName(DataQueryResult? item, string? resultFileNamePattern = null) {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
             string filePrefix = "request";

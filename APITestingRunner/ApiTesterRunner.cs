@@ -10,8 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner {
     public class ApiTesterRunner {
-        private ILogger _logger;
+        private ILogger? _logger;
 
+        //Consider changing to Ctor class - only thing being added
         public ApiTesterRunner AddLogger(ILogger logger) {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -29,6 +30,8 @@ namespace APITestingRunner {
         public async Task RunTests(string pathConfigJson) {
             Console.WriteLine($"Loading config on path: {pathConfigJson}");
 
+            _ = _logger ?? throw new ArgumentNullException(nameof(_logger));
+
             ConfigurationManager configManager = new();
 
             Config? configSettings = await configManager.GetConfigAsync(pathConfigJson);
@@ -42,6 +45,8 @@ namespace APITestingRunner {
         }
 
         public async Task<TestRunner> RunTests(Config config) {
+            _ = _logger ?? throw new ArgumentNullException("_logger");
+
             TestRunner testRunner = new(_logger);
             await testRunner.ApplyConfig(config);
 

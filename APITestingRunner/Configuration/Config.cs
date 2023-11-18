@@ -10,7 +10,7 @@ public class Config {
     /// <summary>
     /// Alternative compare url in case of option of comparing requests.
     /// </summary>
-    public required string CompareUrlBase { get; set; }
+    public required string? CompareUrlBase { get; set; }
 
     /// <summary>
     /// Relative path for the client.
@@ -20,7 +20,7 @@ public class Config {
     /// <summary>
     /// Contains a compare url path. Allows user to point to the same api under different name.
     /// </summary>
-    public required string CompareUrlPath { get; set; }
+    public required string? CompareUrlPath { get; set; }
 
     /// <summary>
     /// Any query parameters api requires.

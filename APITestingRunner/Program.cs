@@ -37,7 +37,7 @@ namespace APITestingRunner {
             while (true) {
                 Console.Write(">> ");
 
-                string input = Console.ReadLine();
+                string input = Console.ReadLine()!;
 
                 if (input == "exit")
                     break;

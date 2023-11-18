@@ -8,10 +8,13 @@ public class DirectoryServices {
     public static string AssemblyDirectory {
 
         get {
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+#pragma warning disable SYSLIB0012 // Type or member is obsolete
+            string codeBase = Assembly.GetExecutingAssembly().CodeBase!;
+#pragma warning restore SYSLIB0012 // Type or member is obsolete
+
             UriBuilder uri = new(codeBase);
             string path = Uri.UnescapeDataString(uri.Path);
-            return Path.GetDirectoryName(path);
+            return Path.GetDirectoryName(path)!;
         }
     }
 }

@@ -6,8 +6,8 @@ namespace APITestingRunner.ApiRequest
 {
     public class DataRequestConstructor
     {
-        private string _baseUrl;
-        private string _relativeUrl;
+        private string _baseUrl = string.Empty;
+        private string _relativeUrl = string.Empty;
 
         /// <summary>
         /// Uset to compose url based on dataquery result. Used to create data driven URL

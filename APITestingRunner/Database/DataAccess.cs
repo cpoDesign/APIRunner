@@ -12,6 +12,7 @@ namespace APITestingRunner.Database {
 
         public async Task<IEnumerable<DataQueryResult>> FetchDataForRunnerAsync() {
             if (string.IsNullOrWhiteSpace(config.DBConnectionString)) throw new TestRunnerConfigurationErrorsException("Failed to load connection string");
+
             using SqlConnection connection = new(config.DBConnectionString);
 
             IEnumerable<object> result = await connection.QueryAsync<object>(config.DBQuery);
@@ -25,16 +26,16 @@ namespace APITestingRunner.Database {
 
                 IDictionary<string, object>? fieldsInResult = rows as IDictionary<string, object>;
 
-
                 // get the fields from database and match to the object
-                foreach (ConfigurationManager.Param configItem in config.DBFields) {
+                if(fieldsInResult is not null && config.DBFields is not null) { 
+                    foreach (ConfigurationManager.Param configItem in config.DBFields) {
+                        var fieldValue = fieldsInResult[configItem.Name]?.ToString()!;
 
-                    object fieldValue = fieldsInResult[configItem.Name];
+                        resultItem.Results.Add(new KeyValuePair<string, string>(configItem.Name, fieldValue));
+                    }
 
-                    resultItem.Results.Add(new KeyValuePair<string, string>(configItem.Name, fieldValue?.ToString()));
+                    list.Add(resultItem);
                 }
-
-                list.Add(resultItem);
             }
 
             return list;
