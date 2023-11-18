@@ -258,8 +258,8 @@ namespace APITestingRunner.Unit.Tests {
             _ = testRunner.Errors.Should().BeEmpty();
             _ = logger.Messages.Count().Should().Be(3);
 
-            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json Matching");
-            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success Results/request-music-2.json NewFile");
+            _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json Matching");
+            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success Results/request-software-2.json NewFile");
             _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json Matching");
 
             //_ = Path.Combine(testDirectory, "request-music-1.json");
