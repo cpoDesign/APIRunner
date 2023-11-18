@@ -9,13 +9,13 @@
 
 Supported methods
 
- |Request Types|Supported|
- |--|--|
- |GET| Yes|
- |PUT|No|
- |POST|No|
- |DELETE|No|
- |PATCH|No|
+ |Request Types |Supported  |
+ |--            |--         |
+ |GET           |Yes        |
+ |PUT           |Yes        |
+ |POST          |Yes        |
+ |PATCH         |Yes        |
+ |DELETE        |Yes        |
 
 Modes for the implementation
 

@@ -5,9 +5,8 @@ using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests {
     [TestClass]
-    public class DataAccessTests {
-        private Config _config = new()
-        {
+    public class DataAccessTests : TestBase {
+        private readonly Config _config = new() {
             UrlBase = "http://localhost:5152/",
             CompareUrlBase = string.Empty,
             CompareUrlPath = string.Empty,
@@ -35,7 +34,7 @@ namespace APITestingRunner.Unit.Tests {
 
         [TestInitialize]
         public void TestInit() {
-            
+
         }
 
         [TestMethod]

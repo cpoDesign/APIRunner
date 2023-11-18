@@ -1,6 +1,5 @@
 ﻿using APITestingRunner.Database;
 using FluentAssertions;
-using System.Diagnostics;
 using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -8,20 +7,17 @@ using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests {
     [TestClass]
-    public class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests {
+    public class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests : TestBase {
 
         private WireMockServer server;
-        private string _dbConnectionStringForTests;
 
         [TestInitialize]
         public void Initialize() {
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
-            // for now update this related to your checkout location
-            _dbConnectionStringForTests = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
-            Debug.WriteLine(_dbConnectionStringForTests);
-        }
 
+            base.Initialize();
+        }
 
         [TestCleanup]
         public void Cleanup() {
@@ -243,9 +239,7 @@ namespace APITestingRunner.Unit.Tests {
             _ = File.Exists(fileName).Should().BeTrue(because: $"Expected file name {fileName}");
             _ = File.Exists(fileName3).Should().BeTrue(because: $"Expected file name {fileName3}");
 
-
-            //now lets rerun and see the differences
-
+            // now lets rerun and see the differences
             // clear logger
             logger = new TestLogger();
 

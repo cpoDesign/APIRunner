@@ -168,18 +168,18 @@ namespace APITestingRunner {
                         }
 
                         break;
-                    //case ConfigurationManager.RequestType.POST:
-                    //    response = await client.PostAsync(pathAndQuery, CreateRequestContent(requestBody));
-                    //    break;
-                    //case ConfigurationManager.RequestType.PUT:
-                    //    response = await client.PutAsync(pathAndQuery, CreateRequestContent(requestBody));
-                    //    break;
-                    //case ConfigurationManager.RequestType.PATCH:
-                    //    response = await client.PatchAsync(pathAndQuery, CreateRequestContent(requestBody));
-                    //    break;
-                    //case ConfigurationManager.RequestType.DELETE:
-                    //    response = await client.DeleteAsync(pathAndQuery);
-                    //    break;
+                    case ConfigurationManager.RequestType.POST:
+                        response = await client.PostAsync(pathAndQuery, CreateRequestContent(requestBody));
+                        break;
+                    case ConfigurationManager.RequestType.PUT:
+                        response = await client.PutAsync(pathAndQuery, CreateRequestContent(requestBody));
+                        break;
+                    case ConfigurationManager.RequestType.PATCH:
+                        response = await client.PatchAsync(pathAndQuery, CreateRequestContent(requestBody));
+                        break;
+                    case ConfigurationManager.RequestType.DELETE:
+                        response = await client.DeleteAsync(pathAndQuery);
+                        break;
                     default:
                         _errors.Add("Unsupported request type");
                         break;
@@ -191,7 +191,7 @@ namespace APITestingRunner {
                         StatusCode = (int)response.StatusCode
                     });
 
-                    onScreenMessage = GenerateResponseMessage(pathAndQuery, response);
+                    onScreenMessage = GenerateResponseMessage(_config.RequestType, pathAndQuery, response);
                     string content = await response.Content.ReadAsStringAsync();
                     var fileName = string.Empty;
                     var responseHeaders = response.Headers.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString() ?? string.Empty)).ToList();
@@ -288,12 +288,12 @@ namespace APITestingRunner {
             }
         }
 
-        public string GenerateResponseMessage(string relativeUrl, HttpResponseMessage? response) {
+        public string GenerateResponseMessage(RequestType requestType, string relativeUrl, HttpResponseMessage? response) {
             var determination = "fail";
 
             if (response is not null) {
                 if (response.IsSuccessStatusCode) determination = "success";
-                return $"{relativeUrl} {(int)response.StatusCode} {determination}";
+                return $"{requestType} {relativeUrl} {(int)response.StatusCode} {determination}";
             }
 
             return $"{relativeUrl} failed to return";
@@ -363,13 +363,9 @@ namespace APITestingRunner {
             if (fileOperations.ValidateIfFileExists(filePath)) {
                 var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(FileOperations.GetFileData(filePath));
 
-                if (fileSourceResult is not null)
+                if (fileSourceResult is not null) {
                     status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
-
-                /*
-                 API {"statusCode":200,"responseContent":"Hello, world!","headers":[{"Key":"Date","Value":["Sat, 18 Nov 2023 02:11:03 GMT"]},{"Key":"Server","Value":["Kestrel"]},{"Key":"Transfer-Encoding","Value":["chunked"]}],"url":"/WeatherForecast?urlKey=configKey\u0026id=1","item":{"RowId":1},"IsSuccessStatusCode":true,"CompareResults":null}
-                    from file "{\"statusCode\":200,\"responseContent\":\"Hello, world!\",\"headers\":[{\"Key\":\"Date\",\"Value\":[\"Sat, 18 Nov 2023 01:50:17 GMT\"]},{\"Key\":\"Server\",\"Value\":[\"Kestrel\"]},{\"Key\":\"Transfer-Encoding\",\"Value\":[\"chunked\"]}],\"url\":\"/WeatherForecast?urlKey=configKey\\u0026id=1\",\"item\":{\"RowId\":1},\"IsSuccessStatusCode\":true,\"CompareResults\":null}"
-                 */
+                }
 
             } else {
                 await fileOperations.WriteFile(filePath, apiResult);

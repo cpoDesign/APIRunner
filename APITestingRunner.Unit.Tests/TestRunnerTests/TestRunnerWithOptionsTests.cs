@@ -80,7 +80,7 @@ namespace APITestingRunner.Unit.Tests {
 
             _ = testRunner.Errors.Should().BeEmpty();
 
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 200 success"));
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{config.RequestType} /WeatherForecast 200 success"));
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace APITestingRunner.Unit.Tests {
 
             _ = testRunner.Errors.Should().BeEmpty();
 
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 200 success Results/request-0.json"));
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{config.RequestType} /WeatherForecast 200 success Results/request-0.json"));
 
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
@@ -184,7 +184,7 @@ namespace APITestingRunner.Unit.Tests {
 
             // assert
             _ = testRunner.Errors.Should().HaveCount(0);
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 500 fail Results/request-0.json"));
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{config.RequestType} /WeatherForecast 500 fail Results/request-0.json"));
 
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
@@ -245,7 +245,7 @@ namespace APITestingRunner.Unit.Tests {
 
             // assert
             _ = testRunner.Errors.Should().HaveCount(0);
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 200 success"));
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{config.RequestType} /WeatherForecast 200 success"));
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
             var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
@@ -311,7 +311,7 @@ namespace APITestingRunner.Unit.Tests {
             if (directoryAndFileExists) {
                 fileNameLog += $" Results/request-0.json";
             }
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"/WeatherForecast {statusCode} {determination}{fileNameLog}"));
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{config.RequestType} /WeatherForecast {statusCode} {determination}{fileNameLog}"));
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
             var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
