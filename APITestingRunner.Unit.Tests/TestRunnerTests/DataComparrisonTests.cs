@@ -35,7 +35,6 @@ namespace APITestingRunner.Unit.Tests {
             ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.Accepted, "test", null, null, null, true, null);
             ComparissonStatus expectedResult = ComparissonStatus.Different;
 
-
             var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
         }
@@ -45,7 +44,6 @@ namespace APITestingRunner.Unit.Tests {
             ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
             ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, false, null);
             ComparissonStatus expectedResult = ComparissonStatus.Different;
-
 
             var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
