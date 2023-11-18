@@ -9,7 +9,7 @@ namespace APITestingRunner.Unit.Tests {
 
     [TestClass]
     public partial class TestRunnerWithOptionsWithConfigAPICallsTests {
-        private WireMockServer server;
+        private WireMockServer? server;
 
         [TestInitialize]
         public void Initialize() {
@@ -28,18 +28,21 @@ namespace APITestingRunner.Unit.Tests {
             }
 
             // This stops the mock server to clean up after ourselves
+            _ = server ?? throw new ArgumentNullException(nameof(server));
             server.Stop();
         }
 
         [TestMethod]
         public void GenerateResultName_ShouldThrowExceptionIfPassedNull() {
-            Action act = () => TestRunner.GenerateResultName(null, null);
+            Action? act = () => TestRunner.GenerateResultName(null, null);
             _ = act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
         [TestCategory("SimpleAPICallBasedOnConfig")]
         public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200_noStoreOfFiles() {
+            _ = server ?? throw new ArgumentNullException(nameof(server));
+
             server.Given(
                  WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
            )
@@ -84,6 +87,8 @@ namespace APITestingRunner.Unit.Tests {
         [TestCategory("SimpleAPICallBasedOnConfig")]
         [TestCategory("StoreFiles")]
         public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200_WithStoringFiles() {
+            _ = server ?? throw new ArgumentNullException(nameof(server));
+
             server.Given(
                    WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
                )
@@ -138,6 +143,8 @@ namespace APITestingRunner.Unit.Tests {
         [TestCategory("SimpleAPICallBasedOnConfig")]
         [TestCategory("StoreFiles")]
         public async Task CreateConfigForSingleAPICall_ShouldStoreFile_whenErrorIsReceived_WithResult500() {
+            _ = server ?? throw new ArgumentNullException(nameof(server));
+
             server.Given(
                   WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
               )
@@ -194,6 +201,8 @@ namespace APITestingRunner.Unit.Tests {
         [TestCategory("SimpleAPICallBasedOnConfig")]
         [TestCategory("StoreFiles")]
         public async Task CreateConfigForSingleAPICall_ShouldStoreFile_whenErrorIsReceived_WithResult200_ShouldNotStoreResultFile() {
+            _ = server ?? throw new ArgumentNullException(nameof(server));
+
             server.Given(
                 WireMock.RequestBuilders.Request.
                     Create()
@@ -257,6 +266,8 @@ namespace APITestingRunner.Unit.Tests {
         [DataRow(200, "success", StoreResultsOption.All, true)]
         [DataRow(500, "fail", StoreResultsOption.All, true)]
         public async Task CreateConfigForSingleAPICall_ShouldValidateStoreOptionsBaseOnAPiResult(int statusCode, string determination, StoreResultsOption storeOption, bool directoryAndFileExists) {
+            _ = server ?? throw new ArgumentNullException(nameof(server));
+
             server.Given(
                   WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
               )

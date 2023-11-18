@@ -15,22 +15,19 @@ namespace APITestingRunner.Unit.Tests {
                 CompareUrlBase = null,
                 CompareUrlPath = null,
                 UrlPath = "/Data",
-                UrlParam = new List<Param>
-      {
-        new Param("urlKey", "test"),
-        new Param("id", "sqlId")
-      },
+                UrlParam = new List<Param> {
+                    new Param("urlKey", "test"),
+                    new Param("id", "sqlId")
+                },
                 HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
+                    new Param("accept","application/json")
+                },
                 RequestBody = null,
                 DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
                 DBQuery = "select id as sqlId from dbo.sampleTable;",
-                DBFields = new List<Param>
-      {
-        new Param("sqlId", "sqlId"),
-
-      },
+                DBFields = new List<Param> {
+                    new Param("sqlId", "sqlId"),
+                },
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.All,
                 ConfigMode = TesterConfigMode.Run,

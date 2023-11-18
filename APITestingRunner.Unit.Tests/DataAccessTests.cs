@@ -6,35 +6,36 @@ using static ConfigurationManager;
 namespace APITestingRunner.Unit.Tests {
     [TestClass]
     public class DataAccessTests {
-        private Config? _config;
+        private Config _config = new()
+        {
+            UrlBase = "http://localhost:5152/",
+            CompareUrlBase = string.Empty,
+            CompareUrlPath = string.Empty,
+            UrlPath = "/Data",
+            UrlParam = new List<Param>
+                    {
+                        new Param("urlKey", "test"),
+                        new Param("id", "sqlId")
+                    },
+            HeaderParam = new List<Param> {
+                        new Param("accept","application/json")
+                    },
+            RequestBody = null,
+            DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
+            DBQuery = "select id as sqlId from dbo.sampleTable;",
+            DBFields = new List<Param>
+                    {
+                        new Param("sqlId", "sqlId")
+                    },
+            RequestType = RequestType.GET,
+            ResultsStoreOption = StoreResultsOption.All,
+            ConfigMode = TesterConfigMode.Run,
+            OutputLocation = DirectoryServices.AssemblyDirectory
+        };
 
         [TestInitialize]
         public void TestInit() {
-            _config = new() {
-                UrlBase = "http://localhost:5152/",
-                CompareUrlBase = string.Empty,
-                CompareUrlPath = string.Empty,
-                UrlPath = "/Data",
-                UrlParam = new List<Param>
-      {
-        new Param("urlKey", "test"),
-        new Param("id", "sqlId")
-      },
-                HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-                RequestBody = null,
-                DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
-                DBQuery = "select id as sqlId from dbo.sampleTable;",
-                DBFields = new List<Param>
-      {
-        new Param("sqlId", "sqlId")
-      },
-                RequestType = RequestType.GET,
-                ResultsStoreOption = StoreResultsOption.All,
-                ConfigMode = TesterConfigMode.Run,
-                OutputLocation = DirectoryServices.AssemblyDirectory
-            };
+            
         }
 
         [TestMethod]
@@ -42,6 +43,7 @@ namespace APITestingRunner.Unit.Tests {
             _ = new DataAccess(_config);
         }
 
+        //Type Safety takes care of this - shouldn't be needed.
         [TestMethod]
         public void DataAccess_Tests_ConstructorShouldThrowArgumentNullException() {
             _ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(null));
@@ -65,7 +67,6 @@ namespace APITestingRunner.Unit.Tests {
         [TestMethod]
         public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_DataSet_withOneFieldFromDbForBinder() {
             _config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
-
 
             var data = new DataAccess(_config);
 
@@ -122,10 +123,11 @@ namespace APITestingRunner.Unit.Tests {
             _config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
 
             _config.DBFields = new List<Param>
-      {
-        new Param("sqlId", "sqlId"),
-        new Param("fieldName", "fieldName")
-      };
+                {
+                    new Param("sqlId", "sqlId"),
+                    new Param("fieldName", "fieldName")
+                };
+
             _config.DBQuery = "select id as sqlId, name as fieldName from dbo.sampleTable";
             var data = new DataAccess(_config);
 
