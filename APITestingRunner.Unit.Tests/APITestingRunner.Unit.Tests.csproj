@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -15,7 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="SampleDb.mdf" />
+    <Content Include="SampleDb.mdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +35,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\APITestingRunner\APITestingRunner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SampleDb_log.ldf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

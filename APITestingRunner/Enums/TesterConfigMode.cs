@@ -13,7 +13,7 @@ public partial class ConfigurationManager {
         /// <summary>
         /// Calls APIs and store result. If file already exists then it wil also compare output from a api with stored file.
         /// </summary>
-        FileCaptureOrCompare = 3,
+        CaptureAndCompare = 3,
 
         ///// <summary>
         ///// TODO Implement first

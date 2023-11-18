@@ -212,7 +212,7 @@ namespace APITestingRunner {
                                 new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode));
 
                             break;
-                        case TesterConfigMode.FileCaptureOrCompare:
+                        case TesterConfigMode.CaptureAndCompare:
 
 
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
@@ -225,16 +225,13 @@ namespace APITestingRunner {
 
                             break;
 
-                        //TODO:implement
-                        ///case TesterConfigMode.APICompare:
-
                         default:
                             _errors.Add("This option is currently not supported");
                             throw new NotImplementedException();
                     }
 
-
-
+                    //TODO:implement
+                    ///case TesterConfigMode.APICompare:
                     //if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
                     //{
                     //    List<string> compareList = new();
@@ -311,7 +308,7 @@ namespace APITestingRunner {
             ComparissonStatus fileCompareStatus = ComparissonStatus.NewFile;
 
 
-            if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture || _config.ConfigMode == ConfigurationManager.TesterConfigMode.FileCaptureOrCompare) {
+            if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture || _config.ConfigMode == ConfigurationManager.TesterConfigMode.CaptureAndCompare) {
                 if (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.All || (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode)) {
                     if (_config.OutputLocation != null) {
                         fileCompareStatus = await logIntoFileAsync(_config.OutputLocation, apiCallResult, false);

@@ -1,5 +1,6 @@
 ﻿using APITestingRunner.Database;
 using FluentAssertions;
+using System.Diagnostics;
 using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -16,8 +17,9 @@ namespace APITestingRunner.Unit.Tests {
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
 
-            _dbConnectionStringForTests = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={DirectoryServices.SolutionDirectory}\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated ;Security=True";
-
+            //_dbConnectionStringForTests = $"AttachDbFilename={DirectoryServices.SolutionTestLocationDirectory}\\SampleDb.mdf;Integrated ;Security=True";
+            _dbConnectionStringForTests = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\CODE\\CPODESIGN\\APITESTINGRUNNER\\APITESTINGRUNNER.UNIT.TESTS\\SAMPLEDB.MDF;Integrated Security=True;";
+            Debug.WriteLine(_dbConnectionStringForTests);
             /*
                 server = WireMockServer.Start(new WireMockServerSettings {
                 Urls = new[] {
@@ -224,7 +226,7 @@ namespace APITestingRunner.Unit.Tests {
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.All,
                 ResultFileNamePattern = "{fileRecordType}-{bindingId}",
-                ConfigMode = TesterConfigMode.FileCaptureOrCompare,
+                ConfigMode = TesterConfigMode.CaptureAndCompare,
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
