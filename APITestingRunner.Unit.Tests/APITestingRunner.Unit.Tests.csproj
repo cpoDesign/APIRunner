@@ -11,13 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="SampleDb.mdf" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="SampleDb.mdf">
+    <Resource Include="SampleDb.mdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </Resource>
+    <Resource Include="SampleDb_log.ldf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -35,12 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\APITestingRunner\APITestingRunner.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="SampleDb_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

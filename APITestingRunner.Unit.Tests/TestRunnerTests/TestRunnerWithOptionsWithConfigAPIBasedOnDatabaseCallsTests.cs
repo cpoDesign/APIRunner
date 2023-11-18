@@ -12,25 +12,16 @@ namespace APITestingRunner.Unit.Tests {
 
         private WireMockServer server;
         private string _dbConnectionStringForTests;
+
         [TestInitialize]
         public void Initialize() {
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
-
-            //_dbConnectionStringForTests = $"AttachDbFilename={DirectoryServices.SolutionTestLocationDirectory}\\SampleDb.mdf;Integrated ;Security=True";
-            _dbConnectionStringForTests = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\CODE\\CPODESIGN\\APITESTINGRUNNER\\APITESTINGRUNNER.UNIT.TESTS\\SAMPLEDB.MDF;Integrated Security=True;";
+            // for now update this related to your checkout location
+            _dbConnectionStringForTests = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
             Debug.WriteLine(_dbConnectionStringForTests);
-            /*
-                server = WireMockServer.Start(new WireMockServerSettings {
-                Urls = new[] {
-                    "http://localhost:7777/",
-                    //"http://localhost:8888/",
-                    //"http://localhost:9999/"
-                },
-                //UseSSL = true
-            });
-             */
         }
+
 
         [TestCleanup]
         public void Cleanup() {
@@ -209,13 +200,12 @@ namespace APITestingRunner.Unit.Tests {
                 UrlPath = "/WeatherForecast",
                 RequestBody = null,
                 HeaderParam = new List<Param> {
-                                new Param("accept","application/json")
-                              },
-                UrlParam = new List<Param>
-                  {
+                    new Param("accept", "application/json")
+                },
+                UrlParam = new List<Param> {
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
-                  },
+                },
                 DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId, RecordType as fileRecordType from dbo.sampleTable where id in (1,3)",
                 DBFields = new List<Param>
