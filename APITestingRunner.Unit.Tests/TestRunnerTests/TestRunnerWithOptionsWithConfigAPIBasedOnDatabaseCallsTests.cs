@@ -1,12 +1,13 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Logging;
+﻿using APITestingRunner.Database;
+using FluentAssertions;
+using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests {
     [TestClass]
-    public partial class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests {
+    public class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests {
 
         private WireMockServer server;
 
@@ -14,6 +15,17 @@ namespace APITestingRunner.Unit.Tests {
         public void Initialize() {
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
+
+            /*
+                server = WireMockServer.Start(new WireMockServerSettings {
+                Urls = new[] {
+                    "http://localhost:7777/",
+                    //"http://localhost:8888/",
+                    //"http://localhost:9999/"
+                },
+                //UseSSL = true
+            });
+             */
         }
 
         [TestCleanup]
@@ -25,7 +37,6 @@ namespace APITestingRunner.Unit.Tests {
                 Directory.Delete(testDirectory, true);
             }
 
-            // delete all file in results directory
             // This stops the mock server to clean up after ourselves
             server.Stop();
         }
@@ -38,22 +49,24 @@ namespace APITestingRunner.Unit.Tests {
 
         [TestMethod]
         [TestCategory("SimpleAPICallBasedOnDbSource")]
+        [TestCategory("dbcapture")]
         public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200_noStoreOfFiles() {
-            server.Given(
-                 WireMock.RequestBuilders.Request
-                .Create()
-                .WithParam("urlKey", "key")
-                .WithParam("id", new string[] { "1", "2", "3" })
-                .WithPath("/WeatherForecast").UsingGet()
-           )
-           .RespondWith(
-               Response.Create()
-                   .WithStatusCode(200)
-                   .WithHeader("Content-Type", "text/plain")
-                   .WithBody("Hello, world!")
-           );
 
-            Config config = new() {
+            server.Given(
+               WireMock.RequestBuilders.Request.Create()
+               .WithPath("/WeatherForecast")
+               .WithParam("urlKey", "configKey")
+               .WithParam("id", new WildcardMatcher(MatchBehaviour.AcceptOnMatch, "*", true))
+               .UsingGet()
+             )
+             .RespondWith(
+                 Response.Create()
+                     .WithStatusCode(200)
+                     .WithHeader("Content-Type", "text/plain")
+                     .WithBody("Hello, world!")
+             );
+
+            Config apiTesterConfig = new() {
                 UrlBase = "http://localhost:7055",
                 CompareUrlBase = string.Empty,
                 CompareUrlPath = string.Empty,
@@ -64,14 +77,14 @@ namespace APITestingRunner.Unit.Tests {
                               },
                 UrlParam = new List<Param>
                   {
-                    new Param("urlKey", "test"),
-                    new Param("id", "sqlId")
+                    new Param("urlKey", "configKey"),
+                    new Param("id", "bindingId")
                   },
-                DBConnectionString = null,
-                DBQuery = "select id as sqlId from dbo.sampleTable;",
+                DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True",
+                DBQuery = "select id as bindingId from dbo.sampleTable;",
                 DBFields = new List<Param>
                   {
-                    new Param("sqlId", "sqlId")
+                    new Param("bindingId", "bindingId"),
                   },
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.None,
@@ -79,23 +92,185 @@ namespace APITestingRunner.Unit.Tests {
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
-            config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+            var logger = new TestLogger();
 
-            config.DBFields = new List<Param>
-              {
-                new Param("sqlId", "sqlId"),
-                new Param("fieldName", "fieldName")
-              };
+            var testRunner = await new ApiTesterRunner()
+                                .AddLogger(logger)
+                                .RunTests(apiTesterConfig);
+
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count().Should().Be(3);
+
+            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success");
+            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success");
+            _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success");
+        }
+
+        [TestMethod]
+        [TestCategory("SimpleAPICallBasedOnDbSourceWithCapture")]
+        [TestCategory("dbcapture")]
+        public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_404_WithFailureCapture() {
+
+            server.Given(
+               WireMock.RequestBuilders.Request.Create()
+               .WithPath("/WeatherForecast")
+               .WithParam("urlKey", "configKey")
+               .WithParam("id", new WildcardMatcher(MatchBehaviour.AcceptOnMatch, "*", true))
+               .UsingGet()
+             )
+             .RespondWith(
+                 Response.Create()
+                    .WithStatusCode(404)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("Hello, world!")
+
+             );
+
+            Config apiTesterConfig = new() {
+                UrlBase = "http://localhost:7055",
+                CompareUrlBase = string.Empty,
+                CompareUrlPath = string.Empty,
+                UrlPath = "/WeatherForecast",
+                RequestBody = null,
+                HeaderParam = new List<Param> {
+                                new Param("accept","application/json")
+                              },
+                UrlParam = new List<Param>
+                  {
+                    new Param("urlKey", "configKey"),
+                    new Param("id", "bindingId")
+                  },
+                DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True",
+                DBQuery = "select id as bindingId from dbo.sampleTable;",
+                DBFields = new List<Param>
+                  {
+                    new Param("bindingId", "bindingId"),
+                  },
+                RequestType = RequestType.GET,
+                ResultsStoreOption = StoreResultsOption.FailuresOnly,
+                ConfigMode = TesterConfigMode.Capture,
+                OutputLocation = DirectoryServices.AssemblyDirectory,
+            };
 
             var logger = new TestLogger();
 
-            var testRunner = await new IndividualActions()
+            var testRunner = await new ApiTesterRunner()
                                 .AddLogger(logger)
-                                .RunTests(config);
+                                .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count().Should().Be(3);
 
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 200 success"));
+            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 404 fail Results/request-1.json");
+            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 404 fail Results/request-2.json");
+            _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 404 fail Results/request-3.json");
+
+            var expectedFilePath = DirectoryServices.AssemblyDirectory;
+
+            var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
+            _ = Directory.Exists(testDirectory).Should().BeTrue(because: $"directory is: {testDirectory}");
+
+            var fileName = Path.Combine(testDirectory, TestRunner.GenerateResultName(new DataQueryResult() { RowId = 1 }));
+            var fileName2 = Path.Combine(testDirectory, TestRunner.GenerateResultName(new DataQueryResult() { RowId = 2 }));
+            var fileName3 = Path.Combine(testDirectory, TestRunner.GenerateResultName(new DataQueryResult() { RowId = 3 }));
+
+            _ = File.Exists(fileName).Should().BeTrue();
+            _ = File.Exists(fileName2).Should().BeTrue();
+            _ = File.Exists(fileName3).Should().BeTrue();
+        }
+
+        [TestMethod]
+        [TestCategory("SimpleAPICallBasedOnDbSourceWithCapture")]
+        [TestCategory("ResultCompare")]
+        public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200_ShouldStoreAllRequest_withFileNamingBasedOnDbResult() {
+
+            server.Given(
+               WireMock.RequestBuilders.Request.Create()
+               .WithPath("/WeatherForecast")
+               .WithParam("urlKey", "configKey")
+               .WithParam("id", new WildcardMatcher(MatchBehaviour.AcceptOnMatch, "*", true))
+               .UsingGet()
+             )
+             .RespondWith(
+                 Response.Create()
+                     .WithStatusCode(200)
+                     .WithHeader("Content-Type", "text/plain")
+                     .WithBody("Hello, world!")
+             );
+
+            Config apiTesterConfig = new() {
+                UrlBase = "http://localhost:7055",
+                CompareUrlBase = string.Empty,
+                CompareUrlPath = string.Empty,
+                UrlPath = "/WeatherForecast",
+                RequestBody = null,
+                HeaderParam = new List<Param> {
+                                new Param("accept","application/json")
+                              },
+                UrlParam = new List<Param>
+                  {
+                    new Param("urlKey", "configKey"),
+                    new Param("id", "bindingId")
+                  },
+                DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True",
+                DBQuery = "select id as bindingId, RecordType as fileRecordType from dbo.sampleTable where id in (1,3)",
+                DBFields = new List<Param>
+                  {
+                    new Param("bindingId", "bindingId"),
+                    new Param("fileRecordType", "fileRecordType"),
+                  },
+                RequestType = RequestType.GET,
+                ResultsStoreOption = StoreResultsOption.All,
+                ResultFileNamePattern = "{fileRecordType}-{bindingId}",
+                ConfigMode = TesterConfigMode.FileCaptureOrCompare,
+                OutputLocation = DirectoryServices.AssemblyDirectory,
+            };
+
+            var logger = new TestLogger();
+
+            var testRunner = await new ApiTesterRunner()
+                                .AddLogger(logger)
+                                .RunTests(apiTesterConfig);
+
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count().Should().Be(2);
+
+            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json NewFile");
+            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json NewFile");
+
+            var expectedFilePath = DirectoryServices.AssemblyDirectory;
+
+            var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
+            _ = Directory.Exists(testDirectory).Should().BeTrue(because: $"directory is: {testDirectory}");
+
+            var fileName = Path.Combine(testDirectory, "request-music-1.json");
+            var fileName3 = Path.Combine(testDirectory, "request-software-3.json");
+
+            _ = File.Exists(fileName).Should().BeTrue(because: $"Expected file name {fileName}");
+            _ = File.Exists(fileName3).Should().BeTrue(because: $"Expected file name {fileName3}");
+
+
+            //now lets rerun and see the differences
+
+            // clear logger
+            logger = new TestLogger();
+
+            apiTesterConfig.DBQuery = "select id as bindingId, RecordType as fileRecordType from dbo.sampleTable";
+
+            testRunner = await new ApiTesterRunner()
+                                .AddLogger(logger)
+                                .RunTests(apiTesterConfig);
+
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count().Should().Be(3);
+
+            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json Matching");
+            _ = logger.Messages.First().Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success Results/request-music-2.json NewFile");
+            _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json Matching");
+
+            //_ = Path.Combine(testDirectory, "request-music-1.json");
+            //_ = Path.Combine(testDirectory, "request-music-1.json");
+            //_ = Path.Combine(testDirectory, "request-software-3.json");
         }
 
 

@@ -9,10 +9,10 @@
 using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner {
-    public class IndividualActions {
+    public class ApiTesterRunner {
         private ILogger _logger;
 
-        public IndividualActions AddLogger(ILogger logger) {
+        public ApiTesterRunner AddLogger(ILogger logger) {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             return this;

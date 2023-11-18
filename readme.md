@@ -10,9 +10,67 @@ Modes for the implementation
 
 |Key|Required|Value|
 |--|--|--|
-|UrlBase|Yes | Location where to make api call to|
 |HeaderParam|no| Appends header information to the API requirest|
-|OutputLocation|Conditional|Location where captured logs are stored. Depends on ConfigMode = Capture or FileCaptureAndCompare|
+|OutputLocation|Conditional|Location where captured logs are stored. Depends on ConfigMode = Capture or FileCaptureOrCompare|
+|ResultsStoreOption|Yes|Required with possible values None, FailuresOnly, All|
+|UrlBase|Yes | Location where to make api call to|
+|UrlParam|Yes|Url param allows adding query parameters to url|
+
+
+### UrlParam
+
+#### Static binding
+----
+populate the http request with a value to get a static parameter
+
+```url
+http://localhost:7055/WeatherForecast?urlkey=configKey
+```
+the config will look like this:
+
+```c#
+UrlBase = "http://localhost:7055",
+UrlPath = "/WeatherForecast",
+UrlParam = new List<Param>
+            {
+            new Param("urlKey", "configKey"),
+            }
+```
+
+
+#### Data driven parameter
+
+populate id with database
+
+```url
+http://localhost:7055/WeatherForecast?id=15
+```
+
+config to create the binding, mark the id from database in your sql query and use dbfields to capture the output
+
+```c#
+UrlBase = "http://localhost:7055",
+UrlPath = "/WeatherForecast",
+DBConnectionString = "<insert your connection string>",
+ UrlParam = new List<Param>{
+    new Param("urlKey", "configKey"),
+    new Param("id", "bindingId")
+},
+DBQuery = "select id as bindingId from dbo.sampleTable;",
+DBFields = new List<Param>{
+    new Param("bindingId", "bindingId"),
+    new Param("fieldName", "fieldName")
+},
+```
+
+this will map to param with this pattern
+
+```url
+http://localhost:7055/WeatherForecast?id={bindingId}
+```
+
+
+
 
 ### TesterConfigMode types
 
@@ -20,9 +78,26 @@ Modes for the implementation
 |--|--|--|
 |Run |1|Runs the tests only and shows result as overview.|
 |Capture|2|Runs the tests and capture the results. Process will fail in case the file already exists. |
-|FileCaptureAndCompare|3|Calls APIs and store result. If file already exists then it wil also compare output from a api with stored file.|
+|FileCaptureOrCompare|3|Calls APIs and store result. If file already exists then it wil also compare output with api result.|
 |APICompare|4|Not implemented yet. Realtime compare. Compares the results of two APIs. Good for regression testing of APIs.|
 
+### ResultsStoreOption
+
+this has to be used with configuration ConfigMode min level capture
+
+|name|Numeric value| purpose|
+|--|--|--|
+|None|0|Just run the tests|
+|FailuresOnly|1|Record only failures|
+|All| 2|stores all results|
+
+
+A path to store results file are using order in which data has been recorded in this application
+```bash
+/WeatherForecast?urlKey=configKey&id=1 404 fail Results/request-1.json
+```
+
+    
 #### RUN
 
 takes the configuration and only execute a call against the api
@@ -37,7 +112,7 @@ api base url: http://localhost:7071/
 ```
 
 
-### TesterConfigMode
+### ConfigMode
 
     /// <summary>
     /// Runs the tests only and shows result as overview.

@@ -6,6 +6,7 @@ using APITestingRunner.IoOperations;
 using Microsoft.Extensions.Logging;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
 using static ConfigurationManager;
 
 namespace APITestingRunner {
@@ -45,7 +46,6 @@ namespace APITestingRunner {
 
         internal async Task<TestRunner> RunTestsAsync() {
             // create a request to the api
-            //TODO: conver to HTTPFactory to produce api calls
 
             var handler = new HttpClientHandler();
 
@@ -54,6 +54,7 @@ namespace APITestingRunner {
                                 return true;
                             };
 
+            //TODO: conver to HTTPFactory to produce api calls
             HttpClient client = new(handler) {
                 BaseAddress = new Uri(_config.UrlBase)
             };
@@ -67,25 +68,7 @@ namespace APITestingRunner {
             //}
 
 
-
-
             PopulateClientHeadersFromConfig(client, _config.HeaderParam);
-
-            //if (_dbBasedItems.Count() > 0)
-            //{
-            //    //http://localhost:5152/Data?id=1
-            //    foreach (DataQueryResult item in _dbBasedItems)
-            //    {
-            //        Console.WriteLine($"proceeding with call for record {item.RowId}");
-
-            //        await MakeApiCorCollectionCall(client, item);
-            //    }
-            //}
-            //else
-            //{
-            //    //http://localhost:5152/Data?id=1
-            //    await MakeApiCall(client);
-            //}
 
             await MakeApiCall(client);
 
@@ -101,30 +84,15 @@ namespace APITestingRunner {
         }
 
         private async Task MakeApiCall(HttpClient client) {
-            string? pathAndQuery = string.Empty;
-
 
             //// execute db data load only has some data in it
             //if (!string.IsNullOrWhiteSpace(config.DBConnectionString) && !string.IsNullOrWhiteSpace(config.DBQuery) && config.DBFields.Count() > 0) {
             //    testRunner = await testRunner.GetDataForTestRunnerDataSet();
             //}
 
-
-            try {
-                pathAndQuery = new DataRequestConstructor().AddBaseUrl(_config.UrlBase).ComposeUrlAddressForRequest(_config.UrlPath, _config, null).GetPathAndQuery();
-
-                //if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
-                //{
-                //    compareUrl = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.CompareUrlPath, _config, null);
-                //}
-            } catch (Exception) {
-                _errors.Add($"Error has occurred while composing an url: {pathAndQuery}");
-                return;
-            }
-
             foreach (DataQueryResult dataQueryResult in await GetDataToProcessAsync()) {
 
-                await MakeApiForCollectionCall(client, pathAndQuery, dataQueryResult);
+                await MakeApiForCollectionCall(client, dataQueryResult);
             }
 
             return;
@@ -143,17 +111,6 @@ namespace APITestingRunner {
         }
 
 
-        //internal async Task<TestRunner> GetDataForTestRunnerDataSet() {
-        //    // connect to database and load information
-        //    DataAccess db = new(_config);
-        //    _dbBasedItems = await db.FetchDataForRunnerAsync();
-
-        //    if (_dbBasedItems != null) {
-        //        Console.WriteLine($"Found {_dbBasedItems.Count()} records for test");
-        //    }
-
-        //    return this;
-        //}
         /// <summary>
         /// 
         /// </summary>
@@ -163,9 +120,30 @@ namespace APITestingRunner {
         /// <param name="requestBody"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private async Task MakeApiForCollectionCall(HttpClient client, string pathAndQuery, DataQueryResult? item = null, string requestBody = "") {
+        private async Task MakeApiForCollectionCall(HttpClient client, DataQueryResult? item = null, string requestBody = "") {
             HttpResponseMessage? response = null;
             string onScreenMessage = string.Empty;
+
+            var pathAndQuery = string.Empty;
+            try {
+                pathAndQuery = new DataRequestConstructor()
+                                    .AddBaseUrl(_config.UrlBase)
+                                    .ComposeUrlAddressForRequest(_config.UrlPath, _config, item)
+                                    .GetPathAndQuery();
+
+                //if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
+                //{
+                //    compareUrl = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.CompareUrlPath, _config, null);
+                //}
+            } catch (Exception) {
+                _errors.Add($"Error has occurred while composing an url: {pathAndQuery}");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(pathAndQuery)) {
+                _errors.Add("Failed to compose path and query for API request");
+                return;
+            }
 
             try {
 
@@ -186,7 +164,6 @@ namespace APITestingRunner {
 
                             //response = await client.SendAsync(request);
                         }
-
 
                         break;
                     //case ConfigurationManager.RequestType.POST:
@@ -218,26 +195,36 @@ namespace APITestingRunner {
                     string content = await response.Content.ReadAsStringAsync();
 
 
+                    var fileName = string.Empty;
+
                     switch (_config.ConfigMode) {
                         case TesterConfigMode.Run:
                             // no another work necessary here
                             break;
                         case TesterConfigMode.Capture:
 
-                            string fileName = TestRunner.GenerateResultName(item);
+                            fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
                             onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
-                            await ProcessResultCapture(
+                            _ = await ProcessResultCaptureAndCompareIfRequested(
                                 new ApiCallResult(response.StatusCode, content, response.Headers, pathAndQuery, item, response.IsSuccessStatusCode));
 
                             break;
-                        case TesterConfigMode.FileCaptureAndCompare:
+                        case TesterConfigMode.FileCaptureOrCompare:
 
-                            throw new NotImplementedException();
-                            //await ProcessResultCapture(new ApiCallResult(response.StatusCode, content, response.Headers, pathAndQuery, item, response.IsSuccessStatusCode), true);
+
+                            fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
+
+                            onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
+
+                            var result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult(response.StatusCode, content, response.Headers, pathAndQuery, item, response.IsSuccessStatusCode));
+
+                            onScreenMessage += $" {Enum.GetName(result.ComparissonStatus)}";
 
                             break;
-                        case TesterConfigMode.APICompare:
+
+                        //TODO:implement
+                        ///case TesterConfigMode.APICompare:
 
                         default:
                             _errors.Add("This option is currently not supported");
@@ -316,54 +303,104 @@ namespace APITestingRunner {
             return new(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
         }
 
-        private async Task ProcessResultCapture(ApiCallResult apiCallResult, bool IsCompareFile = false) {
-            string response = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
+        private async Task<ProcessingFileResult> ProcessResultCaptureAndCompareIfRequested(ApiCallResult apiCallResult) {
+            _ = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
 
-            if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture) {
+            ComparissonStatus fileAlreadyExists = ComparissonStatus.NewFile;
+
+
+            if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture || _config.ConfigMode == ConfigurationManager.TesterConfigMode.FileCaptureOrCompare) {
                 if (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.All || (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode)) {
                     if (_config.OutputLocation != null) {
-                        await logIntoFileAsync(_config.OutputLocation, apiCallResult, IsCompareFile);
+                        fileAlreadyExists = await logIntoFileAsync(_config.OutputLocation, apiCallResult, false);
                     } else {
                         _errors.Add("No logLocation found");
                     }
                 }
             }
 
-            if (IsCompareFile) {
-                TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)apiCallResult.statusCode);
-                if (existingResult == null) {
-                    _resultsStats.Add(new TestResultStatus { StatusCode = (int)apiCallResult.statusCode, NumberOfResults = 1 });
-                } else {
-                    existingResult.NumberOfResults++;
-                }
 
-                responses.Add(response);
-            }
+            //if (IsCompareFile) {
+            //    TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)apiCallResult.statusCode);
+            //    if (existingResult == null) {
+            //        _resultsStats.Add(new TestResultStatus { StatusCode = (int)apiCallResult.statusCode, NumberOfResults = 1 });
+            //    } else {
+            //        existingResult.NumberOfResults++;
+            //    }
 
-            Console.WriteLine(response);
+            //    responses.Add(response);
+            //}
+
+            return new ProcessingFileResult { ComparissonStatus = fileAlreadyExists };
+
         }
 
-        private async Task logIntoFileAsync(string logLocation, ApiCallResult apiCallResult, bool IsCompareFile) {
+        /// <summary>
+        /// Validate If File already exists.
+        /// </summary>
+        /// <param name="logLocation"></param>
+        /// <param name="apiCallResult"></param>
+        /// <param name="captureCompareFile"></param>
+        /// <returns>Boolean result checking if file already exists.</returns>
+        private async Task<ComparissonStatus> logIntoFileAsync(string logLocation, ApiCallResult apiCallResult, bool validateIfFilesMatch = false) {
+
             string resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
             if (!Directory.Exists(resultsDirectory)) {
                 _ = Directory.CreateDirectory(resultsDirectory);
             }
 
-            var fileName = TestRunner.GenerateResultName(apiCallResult.item);
+            ComparissonStatus status = ComparissonStatus.NewFile;
 
-            if (IsCompareFile) {
-                fileName += "Compare";
+            var fileName = TestRunner.GenerateResultName(apiCallResult.item, _config.ResultFileNamePattern);
+            var fileOperations = new FileOperations();
+
+            var filePath = Path.Combine(resultsDirectory, fileName);
+            string apiResult = JsonSerializer.Serialize(apiCallResult);
+
+            if (fileOperations.ValidateIfFileExists(filePath)) {
+                status = ComparissonStatus.Different;
+
+                if (FileOperations.CreateMD5(apiResult) == FileOperations.GetFileChecksum(filePath)) {
+                    status = ComparissonStatus.Matching;
+                }
+
+                /*
+                 
+                 
+                 API
+{"statusCode":200,"responseContent":"Hello, world!","headers":[{"Key":"Date","Value":["Sat, 18 Nov 2023 02:11:03 GMT"]},{"Key":"Server","Value":["Kestrel"]},{"Key":"Transfer-Encoding","Value":["chunked"]}],"url":"/WeatherForecast?urlKey=configKey\u0026id=1","item":{"RowId":1},"IsSuccessStatusCode":true,"CompareResults":null}
+
+from file
+
+"{\"statusCode\":200,\"responseContent\":\"Hello, world!\",\"headers\":[{\"Key\":\"Date\",\"Value\":[\"Sat, 18 Nov 2023 01:50:17 GMT\"]},{\"Key\":\"Server\",\"Value\":[\"Kestrel\"]},{\"Key\":\"Transfer-Encoding\",\"Value\":[\"chunked\"]}],\"url\":\"/WeatherForecast?urlKey=configKey\\u0026id=1\",\"item\":{\"RowId\":1},\"IsSuccessStatusCode\":true,\"CompareResults\":null}"
+                 */
+
+            } else {
+                await fileOperations.WriteFile(filePath, apiResult);
+
             }
 
-            await new FileOperations().WriteFile(resultsDirectory, fileName, apiCallResult);
-
+            return status;
         }
 
-        public static string GenerateResultName(DataQueryResult item) {
+        public static string GenerateResultName(DataQueryResult item, string? resultFileNamePattern = null) {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
             string filePrefix = "request";
-            return $"{filePrefix}-{item?.RowId}.json";
+            string fileSuffix = ".json";
+
+            if (string.IsNullOrWhiteSpace(resultFileNamePattern)) {
+                return $"{filePrefix}-{item?.RowId}{fileSuffix}";
+            } else {
+
+                //we have value lets replace it
+
+                foreach (var resultItem in item.Results) {
+                    resultFileNamePattern = resultFileNamePattern.Replace($"{{{resultItem.Key}}}", resultItem.Value);
+                }
+
+                return $"{filePrefix}-{resultFileNamePattern}{fileSuffix}";
+            }
         }
 
         internal async Task<TestRunner> PrintResultsSummary() {

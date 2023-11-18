@@ -29,9 +29,9 @@ namespace APITestingRunner.Database {
                 // get the fields from database and match to the object
                 foreach (ConfigurationManager.Param configItem in config.DBFields) {
 
-                    object sum = fieldsInResult[configItem.Name];
+                    object fieldValue = fieldsInResult[configItem.Name];
 
-                    resultItem.Results.Add(new KeyValuePair<string, string>(configItem.Name, sum?.ToString()));
+                    resultItem.Results.Add(new KeyValuePair<string, string>(configItem.Name, fieldValue?.ToString()));
                 }
 
                 list.Add(resultItem);

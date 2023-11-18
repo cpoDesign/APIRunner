@@ -6,7 +6,7 @@
         [TestMethod]
         public void IndividualActions_SetLogger_PassNull_ShouldReturnNull()
         {
-            _ = Assert.ThrowsException<ArgumentNullException>(() => new IndividualActions().AddLogger(null));
+            _ = Assert.ThrowsException<ArgumentNullException>(() => new ApiTesterRunner().AddLogger(null));
         }
     }
 }

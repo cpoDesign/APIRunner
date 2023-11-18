@@ -27,14 +27,13 @@ namespace APITestingRunner.Unit.Tests {
                 Directory.Delete(testDirectory, true);
             }
 
-            // delete all file in results directory
             // This stops the mock server to clean up after ourselves
             server.Stop();
         }
 
         [TestMethod]
         public void GenerateResultName_ShouldThrowExceptionIfPassedNull() {
-            Action act = () => TestRunner.GenerateResultName(null);
+            Action act = () => TestRunner.GenerateResultName(null, null);
             _ = act.Should().Throw<ArgumentNullException>();
         }
 
@@ -72,7 +71,7 @@ namespace APITestingRunner.Unit.Tests {
 
             var logger = new TestLogger();
 
-            var testRunner = await new IndividualActions()
+            var testRunner = await new ApiTesterRunner()
                                 .AddLogger(logger)
                                 .RunTests(config);
 
@@ -115,7 +114,7 @@ namespace APITestingRunner.Unit.Tests {
 
             var logger = new TestLogger();
 
-            var testRunner = await new IndividualActions()
+            var testRunner = await new ApiTesterRunner()
                                 .AddLogger(logger)
                                 .RunTests(config);
 
@@ -169,7 +168,7 @@ namespace APITestingRunner.Unit.Tests {
             var logger = new TestLogger();
 
             // Act
-            var testRunner = await new IndividualActions()
+            var testRunner = await new ApiTesterRunner()
                                 .AddLogger(logger)
                                 .RunTests(config);
 
@@ -227,7 +226,7 @@ namespace APITestingRunner.Unit.Tests {
             var logger = new TestLogger();
 
             // Act
-            var testRunner = await new IndividualActions()
+            var testRunner = await new ApiTesterRunner()
                                 .AddLogger(logger)
                                 .RunTests(config);
 
@@ -287,7 +286,7 @@ namespace APITestingRunner.Unit.Tests {
             var logger = new TestLogger();
 
             // Act
-            var testRunner = await new IndividualActions()
+            var testRunner = await new ApiTesterRunner()
                                 .AddLogger(logger)
                                 .RunTests(config);
 

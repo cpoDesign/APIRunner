@@ -2,8 +2,7 @@
 
 using static ConfigurationManager;
 
-public class Config
-{
+public class Config {
     /// <summary>
     /// Base path of the url.
     /// </summary>
@@ -72,4 +71,9 @@ public class Config
     /// Database fields mapping to parameters
     /// </summary>
     public List<Param>? DBFields { get; set; }
+
+    /// <summary>
+    /// Result file name pattern used to create a result file when used in combination of result capture.
+    /// </summary>
+    public string? ResultFileNamePattern { get; set; }
 }

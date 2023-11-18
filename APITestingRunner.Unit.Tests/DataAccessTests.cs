@@ -134,15 +134,10 @@ namespace APITestingRunner.Unit.Tests {
             _ = records.Should().NotBeEmpty();
             _ = records.Should().HaveCount(3);
 
-            _ = records.Last().Should().BeEquivalentTo(new DataQueryResult {
-                RowId = 3,
-                Results = new List<KeyValuePair<string, string>> {
-                    new KeyValuePair<string, string>("sqlId", "3"),
-                    new KeyValuePair<string, string>("fieldName", "Name 3 "),
-            }
-            });
-
+            _ = records.Last().RowId.Should().Be(3);
             _ = records.Last().Results.Should().HaveCount(2);
+            _ = records.Last().Results.First().Should().BeEquivalentTo(new KeyValuePair<string, string>("sqlId", "3"));
+            _ = records.Last().Results.Last().Should().BeEquivalentTo(new KeyValuePair<string, string>("fieldName", "Linux"), because: "");
         }
     }
 }

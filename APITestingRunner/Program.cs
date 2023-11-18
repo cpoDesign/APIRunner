@@ -51,7 +51,7 @@ namespace APITestingRunner
                 string pathConfigJson = $"{DirectoryServices.AssemblyDirectory}\\config.json";
                 Console.WriteLine("==========CreateConfigForSingleAPICall============");
 
-                await new IndividualActions().RunTests(pathConfigJson);
+                await new ApiTesterRunner().RunTests(pathConfigJson);
 
                 Console.WriteLine("======================");
             }
