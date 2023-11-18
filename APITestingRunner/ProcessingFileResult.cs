@@ -3,6 +3,7 @@
 namespace APITestingRunner {
     public class ProcessingFileResult {
         public ComparissonStatus ComparissonStatus { get; set; }
+        public bool DisplayFilePathInLog { get; internal set; }
     }
 
     public enum ComparissonStatus {
