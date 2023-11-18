@@ -7,7 +7,6 @@
 - Capture (Store) the test results to file.
 - Compare with previous request.
 
-
 Supported methods
 
  |Request Types|Supported|
@@ -23,8 +22,6 @@ Modes for the implementation
 This tool allows you to run the api calls in multiple modes
 - FileCompare
 
-
-
 ### FileCompare
 we compare only a response from the file
 
@@ -33,11 +30,10 @@ we compare only a response from the file
 |Key|Required|Value|
 |--|--|--|
 |HeaderParam|no| Appends header information to the API requires|
-|OutputLocation|Conditional|Location where captured logs are stored. Depends on ConfigMode = Capture or FileCaptureOrCompare|
+|OutputLocation|Conditional|Location where captured logs are stored. Depends on ConfigMode = Capture or CaptureAndCompare|
 |ResultsStoreOption|Yes|Required with possible values None, FailuresOnly, All|
 |UrlBase|Yes | Location where to make api call to|
 |UrlParam|Yes|Url param allows adding query parameters to url|
-
 
 ### UrlParam
 
@@ -58,7 +54,6 @@ UrlParam = new List<Param>
                 new Param("urlKey", "configKey"),
             }
 ```
-
 
 #### Data driven parameter
 
@@ -91,13 +86,13 @@ this will map to param with this pattern
 http://localhost:7055/WeatherForecast?id={bindingId}
 ```
 
-### TesterConfigMode types
+### ConfigMode types
 
 |Type                   |ConfigValue|UseCase|
 |--                     |--         |--|
 |Run                    |1          |Runs the tests only and shows result as overview.|
 |Capture                |2          |Runs the tests and capture the results. Process will fail in case the file already exists. |
-|FileCaptureOrCompare   |3          |Calls APIs and store result. If file already exists then it wil also compare output with api result.|
+|CaptureAndCompare      |3          |Calls APIs and store result. If file already exists then it wil also compare output with api result.|
 
 ~~|APICompare             |4 |Not implemented yet. Realtime compare. Compares the results of two APIs. Good for regression testing of APIs.|~~
 
@@ -112,11 +107,10 @@ This has to be used with configuration ConfigMode min level capture
 |All                    | 2           |Stores all results|
 
 
-if wile is being stored, the file name is part of output data
+if while is being stored, the file name is part of output data
 ```bash
 /WeatherForecast?urlKey=configKey&id=1 404 fail Results/request-1.json
 ```
-
     
 #### RUN
 
@@ -130,16 +124,6 @@ api base url: http://localhost:7071/
 1.  /Data		OK success
 2.  /Data/1		OK success
 ```
-
-
-### ConfigMode
-
-|Name                   |Numeric value  | purpose|
-|--                     |--             |--|
-|Run                    | 1             | Runs the tests only and shows result as overview|
-|Capture                | 2             | Runs the tests and capture the results.|
-|FileCompare            | 3             | Calls APIs and compare to a stored file|
-|APICompare             | 4             | Realtime compare. Compares the results of two APIs. Good for regression testing of APIs. When migrating between from location to a new location. 
 
 
 ## Docker SQL test
@@ -183,6 +167,3 @@ GO
 INSERT [dbo].[sampleTable] ([id], [name], [description]) VALUES (4, N'Name4', N'descirption 2')
 GO
 ```
-
-
-
