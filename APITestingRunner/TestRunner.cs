@@ -197,6 +197,8 @@ namespace APITestingRunner {
 
                     var fileName = string.Empty;
 
+                    var responseHeaders = response.Headers.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString())).ToList();
+
                     switch (_config.ConfigMode) {
                         case TesterConfigMode.Run:
                             // no another work necessary here
@@ -207,7 +209,7 @@ namespace APITestingRunner {
 
                             onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
                             _ = await ProcessResultCaptureAndCompareIfRequested(
-                                new ApiCallResult(response.StatusCode, content, response.Headers, pathAndQuery, item, response.IsSuccessStatusCode));
+                                new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode));
 
                             break;
                         case TesterConfigMode.FileCaptureOrCompare:
@@ -217,7 +219,7 @@ namespace APITestingRunner {
 
                             onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
 
-                            var result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult(response.StatusCode, content, response.Headers, pathAndQuery, item, response.IsSuccessStatusCode));
+                            var result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode));
 
                             onScreenMessage += $" {Enum.GetName(result.ComparissonStatus)}";
 
@@ -306,13 +308,13 @@ namespace APITestingRunner {
         private async Task<ProcessingFileResult> ProcessResultCaptureAndCompareIfRequested(ApiCallResult apiCallResult) {
             _ = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
 
-            ComparissonStatus fileAlreadyExists = ComparissonStatus.NewFile;
+            ComparissonStatus fileCompareStatus = ComparissonStatus.NewFile;
 
 
             if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture || _config.ConfigMode == ConfigurationManager.TesterConfigMode.FileCaptureOrCompare) {
                 if (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.All || (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode)) {
                     if (_config.OutputLocation != null) {
-                        fileAlreadyExists = await logIntoFileAsync(_config.OutputLocation, apiCallResult, false);
+                        fileCompareStatus = await logIntoFileAsync(_config.OutputLocation, apiCallResult, false);
                     } else {
                         _errors.Add("No logLocation found");
                     }
@@ -331,7 +333,7 @@ namespace APITestingRunner {
             //    responses.Add(response);
             //}
 
-            return new ProcessingFileResult { ComparissonStatus = fileAlreadyExists };
+            return new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
 
         }
 
@@ -358,11 +360,11 @@ namespace APITestingRunner {
             string apiResult = JsonSerializer.Serialize(apiCallResult);
 
             if (fileOperations.ValidateIfFileExists(filePath)) {
-                status = ComparissonStatus.Different;
 
-                if (FileOperations.CreateMD5(apiResult) == FileOperations.GetFileChecksum(filePath)) {
-                    status = ComparissonStatus.Matching;
-                }
+
+                var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(FileOperations.GetFileData(filePath));
+
+                status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
 
                 /*
                  
@@ -377,11 +379,12 @@ from file
 
             } else {
                 await fileOperations.WriteFile(filePath, apiResult);
-
             }
 
             return status;
         }
+
+
 
         public static string GenerateResultName(DataQueryResult item, string? resultFileNamePattern = null) {
             if (item == null) throw new ArgumentNullException(nameof(item));
@@ -441,6 +444,20 @@ from file
 
 
             return;
+        }
+    }
+    public class DataComparrison {
+
+
+        public static ComparissonStatus CompareAPiResults(ApiCallResult apiCallResult, ApiCallResult fileSourceResult) {
+            var status = ComparissonStatus.Different;
+
+            if (apiCallResult.statusCode == fileSourceResult.statusCode)
+                if (apiCallResult.IsSuccessStatusCode == fileSourceResult.IsSuccessStatusCode)
+                    if (apiCallResult.responseContent == fileSourceResult.responseContent)
+                        status = ComparissonStatus.Matching;
+
+            return status;
         }
     }
 }

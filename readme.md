@@ -5,6 +5,14 @@
 
 Modes for the implementation
 
+this tool allows you to run the api calls in multiple modes
+- 
+- FileCompare
+
+
+
+### FileCompare
+we compare only a response from the file
 
 ## Configuration fields
 
@@ -128,9 +136,10 @@ api base url: http://localhost:7071/
     FileCompare = 3,
     /// <summary>
     /// Realtime compare. Compares the results of two APIs. 
-    /// Good for regression testing of APIs.
+    /// Good for regression testing of APIs. When migrating between from location to a new location. 
     /// </summary>
     APICompare = 4
+
 
 
 ## Docker SQL test

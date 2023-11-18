@@ -23,23 +23,9 @@ namespace APITestingRunner.IoOperations {
             return File.Exists(fileName);
         }
 
-        public static string GetFileChecksum(string filePath) {
-
-
+        public static string GetFileData(string filePath) {
             return File.ReadAllText(filePath).Trim();
-            //return CreateMD5(File.ReadAllText(filePath));
         }
 
-        public static string CreateMD5(string input) {
-            return input.Trim();
-            //// Use input string to calculate MD5 hash
-            //using (MD5 md5 = MD5.Create()) {
-            //    byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input.Trim());
-            //    byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-            //    return Convert.ToHexString(hashBytes);
-
-            //}
-        }
     }
 }
