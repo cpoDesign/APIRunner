@@ -10,11 +10,13 @@ namespace APITestingRunner.Unit.Tests {
     public class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests {
 
         private WireMockServer server;
-
+        private string _dbConnectionStringForTests;
         [TestInitialize]
         public void Initialize() {
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
+
+            _dbConnectionStringForTests = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={DirectoryServices.SolutionDirectory}\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated ;Security=True";
 
             /*
                 server = WireMockServer.Start(new WireMockServerSettings {
@@ -80,7 +82,7 @@ namespace APITestingRunner.Unit.Tests {
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
                   },
-                DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True",
+                DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId from dbo.sampleTable;",
                 DBFields = new List<Param>
                   {
@@ -140,7 +142,7 @@ namespace APITestingRunner.Unit.Tests {
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
                   },
-                DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True",
+                DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId from dbo.sampleTable;",
                 DBFields = new List<Param>
                   {
@@ -212,7 +214,7 @@ namespace APITestingRunner.Unit.Tests {
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
                   },
-                DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True",
+                DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId, RecordType as fileRecordType from dbo.sampleTable where id in (1,3)",
                 DBFields = new List<Param>
                   {

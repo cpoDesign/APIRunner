@@ -197,7 +197,7 @@ namespace APITestingRunner {
 
                     var fileName = string.Empty;
 
-                    var responseHeaders = response.Headers.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString())).ToList();
+                    var responseHeaders = response.Headers.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString() ?? string.Empty)).ToList();
 
                     switch (_config.ConfigMode) {
                         case TesterConfigMode.Run:

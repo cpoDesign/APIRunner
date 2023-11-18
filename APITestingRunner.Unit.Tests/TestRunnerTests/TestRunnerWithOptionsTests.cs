@@ -16,9 +16,9 @@ namespace APITestingRunner.Unit.Tests {
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
         }
+
         [TestCleanup]
         public void Cleanup() {
-
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
 
@@ -82,7 +82,8 @@ namespace APITestingRunner.Unit.Tests {
 
         [TestMethod]
         [TestCategory("SimpleAPICallBasedOnConfig")]
-        public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200() {
+        [TestCategory("StoreFiles")]
+        public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200_WithStoringFiles() {
             server.Given(
                    WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
                )
@@ -135,6 +136,7 @@ namespace APITestingRunner.Unit.Tests {
 
         [TestMethod]
         [TestCategory("SimpleAPICallBasedOnConfig")]
+        [TestCategory("StoreFiles")]
         public async Task CreateConfigForSingleAPICall_ShouldStoreFile_whenErrorIsReceived_WithResult500() {
             server.Given(
                   WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
@@ -190,6 +192,7 @@ namespace APITestingRunner.Unit.Tests {
 
         [TestMethod]
         [TestCategory("SimpleAPICallBasedOnConfig")]
+        [TestCategory("StoreFiles")]
         public async Task CreateConfigForSingleAPICall_ShouldStoreFile_whenErrorIsReceived_WithResult200_ShouldNotStoreResultFile() {
             server.Given(
                 WireMock.RequestBuilders.Request.
@@ -233,7 +236,7 @@ namespace APITestingRunner.Unit.Tests {
 
             // assert
             _ = testRunner.Errors.Should().HaveCount(0);
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 200 success Results/request-0.json"));
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, "/WeatherForecast 200 success"));
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
             var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
@@ -290,10 +293,14 @@ namespace APITestingRunner.Unit.Tests {
                                 .AddLogger(logger)
                                 .RunTests(config);
 
-
             // assert
             _ = testRunner.Errors.Should().HaveCount(0);
-            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"/WeatherForecast {statusCode} {determination} Results/request-0.json"));
+
+            var fileNameLog = string.Empty;
+            if (directoryAndFileExists) {
+                fileNameLog += $" Results/request-0.json";
+            }
+            _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"/WeatherForecast {statusCode} {determination}{fileNameLog}"));
 
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
             var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
