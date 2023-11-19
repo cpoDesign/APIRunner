@@ -176,6 +176,7 @@ namespace APITestingRunner {
               // we are using only data in url query
               response = await client.GetAsync(pathAndQuery);
             } else {
+              //TODO: there are people with existing APIs that are using get with providing data as part of request body we need to cater for.
               throw new NotImplementedException();
               //// we are sending data in body
               //HttpRequestMessage request = new()

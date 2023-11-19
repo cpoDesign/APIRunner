@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using System.CommandLine;
 using System.Reflection;
-using static ConfigurationManager;
 
 namespace APITestingRunner {
   /// <summary>
@@ -72,7 +71,7 @@ namespace APITestingRunner {
       //#endregion
 
       var generateConfig = new Option<bool>
-       ("--generateConfig", "an option to generate a new config file with sample data.");
+       ("--generateConfig", "An option to generate a new config file with sample data.");
 
       //TODO: add a option for people to provide a custom config path
       //var config = new Option<string>
@@ -106,17 +105,17 @@ namespace APITestingRunner {
 
       }, version);
 
-      rootCommand.SetHandler(async (generateConfig) => {
-        logger.LogInformation($"Started a sample config generation.");
+      //rootCommand.SetHandler(async (generateConfig) => {
+      //  logger.LogInformation($"Started a sample config generation.");
 
-        await new ApiTesterRunner(logger)
-        .CreateConfig(pathConfigJson, ApiTesterConfig);
+      //  await new ApiTesterRunner(logger)
+      //  .CreateConfig(pathConfigJson, ApiTesterConfig);
 
-        logger.LogInformation($"Config has been generated.");
+      //  logger.LogInformation($"Config has been generated.");
 
-      }, generateConfig);
+      //});
 
-      rootCommand.SetHandler(async (run) => {
+      rootCommand.SetHandler(async (run, version, generateConfig) => {
 
         if (run) {
           logger.LogInformation($"received a command to start running tests");
@@ -139,8 +138,24 @@ namespace APITestingRunner {
           logger.LogInformation("");
           logger.LogInformation("Completed test run");
         }
+
+        if (generateConfig) {
+          logger.LogInformation($"Started a sample config generation.");
+
+          await new ApiTesterRunner(logger)
+          .CreateConfig(pathConfigJson, ApiTesterConfig);
+
+          logger.LogInformation($"Config has been generated.");
+          return;
+        }
+
+        if (version) {
+          logger.LogInformation(Assembly.GetEntryAssembly().GetName().Version.MajorRevision.ToString());
+          return;
+        }
+
         return;
-      }, run);
+      }, run, version, generateConfig);
 
       _ = await rootCommand.InvokeAsync(args);
     }
