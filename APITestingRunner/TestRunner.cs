@@ -58,14 +58,6 @@ namespace APITestingRunner {
         BaseAddress = new Uri(_config.UrlBase)
       };
 
-      //if (!string.IsNullOrWhiteSpace(_config.CompareUrlBase))
-      //{
-      //    compareClient = new()
-      //    {
-      //        BaseAddress = new Uri(_config.UrlBase)
-      //    };
-      //}
-
       PopulateClientHeadersFromConfig(client, _config.HeaderParam);
 
       await MakeApiCall(client);

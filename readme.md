@@ -3,6 +3,9 @@
 TODO:
 outstanding items
 
+command line options
+-- generate a config
+
 1  wiremock add validation for a api call with setup for post with data so it matches a result
 1. Create a status report
     1. Add analysis on how many ware successfull and how many not
