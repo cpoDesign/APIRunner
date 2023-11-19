@@ -29,16 +29,13 @@ namespace APITestingRunner {
                                 new Param("accept","application/json")
                               },
       UrlParam = new List<Param>
-             {
-                    new Param("urlKey", "configKey"),
-                    new Param("id", "bindingId")
-                  },
+                {
+                  new Param("urlKey", "configKey"),
+                  new Param("id", "bindingId")
+                },
       DBConnectionString = null,
-      DBQuery = "select id as bindingId from dbo.sampleTable;",
-      DBFields = new List<Param>
-             {
-                    new Param("bindingId", "bindingId"),
-                  },
+      DBQuery = null,
+      DBFields = null,
       RequestType = RequestType.GET,
       ResultsStoreOption = StoreResultsOption.None,
       ConfigMode = TesterConfigMode.Run,
@@ -54,7 +51,6 @@ namespace APITestingRunner {
     public static string ToColloquialString(this Type type) {
       return !type.IsGenericType ? type.Name : type.Name.Split('`')[0] + "<" + string.Join(", ", type.GetGenericArguments().Select(a => a.ToColloquialString())) + ">";
     }
-
 
     /// <summary>
     ///     Application entry point
@@ -88,7 +84,6 @@ namespace APITestingRunner {
       var version = new Option<bool>
        ("--version", "Print version of this tool.");
 
-
       var rootCommand = new RootCommand("Parameter binding example");
       //rootCommand.Add(delayOption);
       //rootCommand.Add(messageOption);
@@ -107,30 +102,44 @@ namespace APITestingRunner {
       string pathConfigJson = $"{DirectoryServices.AssemblyDirectory}\\config.json";
 
       rootCommand.SetHandler((version) => {
-        Console.WriteLine(Assembly.GetEntryAssembly().GetName().Version);
+        logger.LogInformation(Assembly.GetEntryAssembly().GetName().Version.MajorRevision.ToString());
+
       }, version);
 
       rootCommand.SetHandler(async (generateConfig) => {
-        Console.WriteLine($"Started a sample config generation.");
-        await new ApiTesterRunner(logger).CreateConfig(pathConfigJson, ApiTesterConfig);
-        Console.WriteLine($"Config has been generated.");
+        logger.LogInformation($"Started a sample config generation.");
+
+        await new ApiTesterRunner(logger)
+        .CreateConfig(pathConfigJson, ApiTesterConfig);
+
+        logger.LogInformation($"Config has been generated.");
+
       }, generateConfig);
 
       rootCommand.SetHandler(async (run) => {
 
         if (run) {
-          Console.WriteLine($"received a command to start running tests");
-          Console.WriteLine($"Validating presence of a config file...");
+          logger.LogInformation($"received a command to start running tests");
+          logger.LogInformation($"Validating presence of a config file...");
 
           if (File.Exists(pathConfigJson)) {
-            await new ApiTesterRunner(logger).RunTests(pathConfigJson);
+            try {
+              await new ApiTesterRunner(logger).RunTests(pathConfigJson);
+            } catch (Exception ex) {
+              logger.LogInformation($"Failed to run runner Exception.{ex.Message}");
+
+              if (ex.InnerException != null) {
+                logger.LogInformation($"Inner exception Exception.{ex.InnerException.Message}");
+              }
+            }
           } else {
-            Console.WriteLine($"Failed to find config on path: {pathConfigJson}");
+            logger.LogInformation($"Failed to find config on path: {pathConfigJson}");
           }
 
-          Console.WriteLine("");
-          Console.WriteLine("Completed test run");
+          logger.LogInformation("");
+          logger.LogInformation("Completed test run");
         }
+        return;
       }, run);
 
       _ = await rootCommand.InvokeAsync(args);

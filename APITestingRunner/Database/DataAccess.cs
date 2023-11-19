@@ -1,44 +1,56 @@
 ﻿using APITestingRunner.Excetions;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner.Database {
-    public class DataAccess {
-        private readonly Config config;
+  public class DataAccess {
+    private readonly Config _config;
+    private readonly ILogger _logger;
 
-        public DataAccess(Config config) {
-            this.config = config ?? throw new ArgumentNullException(nameof(config));
-        }
+    public DataAccess(Config config, Microsoft.Extensions.Logging.ILogger logger) {
+      _config = config ?? throw new ArgumentNullException(nameof(config));
+      _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
-        public async Task<IEnumerable<DataQueryResult>> FetchDataForRunnerAsync() {
-            if (string.IsNullOrWhiteSpace(config.DBConnectionString)) throw new TestRunnerConfigurationErrorsException("Failed to load connection string");
+    public async Task<IEnumerable<DataQueryResult>> FetchDataForRunnerAsync() {
 
-            using SqlConnection connection = new(config.DBConnectionString);
+      if (string.IsNullOrWhiteSpace(_config.DBConnectionString)) throw new TestRunnerConfigurationErrorsException("Failed to load connection string");
 
-            IEnumerable<object> result = await connection.QueryAsync<object>(config.DBQuery);
+      List<DataQueryResult> list = new();
 
-            List<DataQueryResult> list = new();
-            int i = 0;
-            foreach (object rows in result) {
-                i++;
+      try {
+        _logger.LogDebug($"Attempting to use connection string: {_config.DBConnectionString}");
 
-                DataQueryResult resultItem = new() { RowId = i, Results = new List<KeyValuePair<string, string>>() };
+        using SqlConnection connection = new(_config.DBConnectionString);
 
-                IDictionary<string, object>? fieldsInResult = rows as IDictionary<string, object>;
+        IEnumerable<object> result = await connection.QueryAsync<object>(_config.DBQuery);
 
-                // get the fields from database and match to the object
-                if(fieldsInResult is not null && config.DBFields is not null) { 
-                    foreach (ConfigurationManager.Param configItem in config.DBFields) {
-                        var fieldValue = fieldsInResult[configItem.Name]?.ToString()!;
+        int i = 0;
+        foreach (object rows in result) {
+          i++;
 
-                        resultItem.Results.Add(new KeyValuePair<string, string>(configItem.Name, fieldValue));
-                    }
+          DataQueryResult resultItem = new() { RowId = i, Results = new List<KeyValuePair<string, string>>() };
 
-                    list.Add(resultItem);
-                }
+          IDictionary<string, object>? fieldsInResult = rows as IDictionary<string, object>;
+
+          // get the fields from database and match to the object
+          if (fieldsInResult is not null && _config.DBFields is not null) {
+            foreach (Param configItem in _config.DBFields) {
+              var fieldValue = fieldsInResult[configItem.Name]?.ToString()!;
+
+              resultItem.Results.Add(new KeyValuePair<string, string>(configItem.Name, fieldValue));
             }
 
-            return list;
+            list.Add(resultItem);
+          }
         }
+      } catch (Exception ex) {
+        _logger.LogError(ex.Message);
+        throw;
+      }
+
+      return list;
     }
+  }
 }

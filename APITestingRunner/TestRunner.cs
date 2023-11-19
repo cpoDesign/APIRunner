@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using static ConfigurationManager;
 
 namespace APITestingRunner {
   public class TestRunner {
@@ -69,7 +68,7 @@ namespace APITestingRunner {
       _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
       if (headerParam != null && headerParam.Count > 0) {
-        foreach (ConfigurationManager.Param item in _config.HeaderParam) {
+        foreach (Param item in _config.HeaderParam) {
           client.DefaultRequestHeaders.Add(item.Name, item.value);
         }
       }
@@ -125,7 +124,7 @@ namespace APITestingRunner {
 
           _logger.LogInformation("Found database query and db fields. Attempting to load data from database.");
 
-          return await new DataAccess(_config).FetchDataForRunnerAsync();
+          return await new DataAccess(_config, _logger).FetchDataForRunnerAsync();
         }
       }
 
@@ -171,7 +170,7 @@ namespace APITestingRunner {
       try {
 
         switch (_config.RequestType) {
-          case ConfigurationManager.RequestType.GET:
+          case RequestType.GET:
 
             if (string.IsNullOrWhiteSpace(requestBody)) {
               // we are using only data in url query
@@ -189,20 +188,20 @@ namespace APITestingRunner {
             }
 
             break;
-          case ConfigurationManager.RequestType.POST:
+          case RequestType.POST:
 
             var requestContent = CreateRequestContent(requestBody);
             Debug.WriteLine($"Capturing requestBody: {await requestContent.ReadAsStringAsync()}");
             response = await client.PostAsync(pathAndQuery, requestContent);
 
             break;
-          case ConfigurationManager.RequestType.PUT:
+          case RequestType.PUT:
             response = await client.PutAsync(pathAndQuery, CreateRequestContent(requestBody));
             break;
-          case ConfigurationManager.RequestType.PATCH:
+          case RequestType.PATCH:
             response = await client.PatchAsync(pathAndQuery, CreateRequestContent(requestBody));
             break;
-          case ConfigurationManager.RequestType.DELETE:
+          case RequestType.DELETE:
             response = await client.DeleteAsync(pathAndQuery);
             break;
           default:
@@ -338,8 +337,8 @@ namespace APITestingRunner {
       ComparissonStatus fileCompareStatus = ComparissonStatus.NewFile;
       var result = new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
 
-      if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.Capture || _config.ConfigMode == ConfigurationManager.TesterConfigMode.CaptureAndCompare) {
-        if (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.All || (_config.ResultsStoreOption == ConfigurationManager.StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode)) {
+      if (_config.ConfigMode == TesterConfigMode.Capture || _config.ConfigMode == TesterConfigMode.CaptureAndCompare) {
+        if (_config.ResultsStoreOption == StoreResultsOption.All || (_config.ResultsStoreOption == StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode)) {
           if (_config.OutputLocation != null) {
             result.DisplayFilePathInLog = true;
             result.ComparissonStatus = await logIntoFileAsync(_config.OutputLocation, apiCallResult, false);

@@ -19,8 +19,9 @@ namespace APITestingRunner {
     public async Task CreateConfig(string pathConfigJson, Config config) {
       ConfigurationManager configManager = new();
 
-      Console.WriteLine($"Created config on path: {pathConfigJson}");
+      _logger.LogInformation($"creating config on path: {pathConfigJson}");
       await configManager.CreateConfig(pathConfigJson, config);
+      _logger.LogInformation($"creating created");
       return;
 
     }
@@ -35,7 +36,11 @@ namespace APITestingRunner {
       TestRunner testRunner = new(_logger);
       await testRunner.ApplyConfig(configSettings);
 
-      testRunner = await testRunner.RunTestsAsync();
+      try {
+        testRunner = await testRunner.RunTestsAsync();
+      } catch (Exception ex) {
+        _logger.LogError(ex.Message);
+      }
 
       _ = await testRunner.PrintResultsSummary();
       return;
