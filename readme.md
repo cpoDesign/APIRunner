@@ -1,5 +1,16 @@
 # Promethean API Test Runner
 
+TODO:
+outstanding items
+
+1  wiremock add validation for a api call with setup for post with data so it matches a result
+1. Create a status report
+    1. Add analysis on how many ware successfull and how many not
+1. 1. Compatibility 
+we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
+
+
+
 ## Purpose of the tool
 - Create an API Test, and: 
     - Review the return.
@@ -17,10 +28,14 @@ Supported methods
  |PATCH         |Yes        |
  |DELETE        |Yes        |
 
+
+
+
 Modes for the implementation
 
 This tool allows you to run the api calls in multiple modes
 - FileCompare
+
 
 ### FileCompare
 we compare only a response from the file

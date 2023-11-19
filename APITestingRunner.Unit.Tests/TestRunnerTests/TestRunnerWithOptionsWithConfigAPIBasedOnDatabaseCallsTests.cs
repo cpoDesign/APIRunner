@@ -185,7 +185,7 @@ namespace APITestingRunner.Unit.Tests {
              .RespondWith(
                  Response.Create()
                      .WithStatusCode(200)
-                     .WithHeader("Content-Type", "text/plain")
+                     .WithHeader("Content-Type", "application/json")
                      .WithBody("Hello, world!")
              );
 

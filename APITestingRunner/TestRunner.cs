@@ -4,6 +4,7 @@ using APITestingRunner.ApiRequest;
 using APITestingRunner.Database;
 using APITestingRunner.IoOperations;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -84,32 +85,53 @@ namespace APITestingRunner {
 
         private async Task MakeApiCall(HttpClient client) {
 
-            //// execute db data load only has some data in it
-            //if (!string.IsNullOrWhiteSpace(config.DBConnectionString) && !string.IsNullOrWhiteSpace(config.DBQuery) && config.DBFields.Count() > 0) {
-            //    testRunner = await testRunner.GetDataForTestRunnerDataSet();
-            //}
-
+            var numberOfResults = 0;
             foreach (DataQueryResult dataQueryResult in await GetDataToProcessAsync()) {
 
-                await MakeApiForCollectionCall(client, dataQueryResult);
+                await MakeApiForCollectionCall(client, dataQueryResult, numberOfResults++, PopulateRequestBody(_config, dataQueryResult));
             }
 
             return;
         }
 
+        public static string PopulateRequestBody(Config config, DataQueryResult dataQueryResult) {
+            if (config is null) throw new ArgumentNullException(nameof(config));
+            if (dataQueryResult is null) throw new ArgumentNullException(nameof(dataQueryResult));
+
+            if (!string.IsNullOrWhiteSpace(config.RequestBody)) {
+                // we have a value
+                var replaceValues = config.RequestBody;
+
+                if (dataQueryResult.Results.Any()) {
+                    foreach (var item in dataQueryResult.Results) {
+                        replaceValues = replaceValues.Replace($"{{{item.Key}}}", item.Value);
+                    }
+                }
+
+                return replaceValues;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets data for processing.
+        /// TODO: convert to yield
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<IEnumerable<DataQueryResult>> GetDataToProcessAsync() {
             _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
             /// return data source
             if (!string.IsNullOrWhiteSpace(_config.DBConnectionString) && !string.IsNullOrWhiteSpace(_config.DBQuery) && _config?.DBFields?.Count() > 0) {
-                //TODO: convert to yield
+
                 return await new DataAccess(_config).FetchDataForRunnerAsync();
                 //yield return await db.FetchDataForRunnerAsync();
             } else {
                 return new List<DataQueryResult> { new DataQueryResult() { RowId = 0 } };
             }
         }
-
 
         /// <summary>
         /// 
@@ -120,7 +142,7 @@ namespace APITestingRunner {
         /// <param name="requestBody"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private async Task MakeApiForCollectionCall(HttpClient client, DataQueryResult? item = null, string requestBody = "") {
+        private async Task MakeApiForCollectionCall(HttpClient client, DataQueryResult item, int numberOfResults, string requestBody = "") {
             _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
             HttpResponseMessage? response = null;
@@ -169,7 +191,11 @@ namespace APITestingRunner {
 
                         break;
                     case ConfigurationManager.RequestType.POST:
-                        response = await client.PostAsync(pathAndQuery, CreateRequestContent(requestBody));
+
+                        var requestContent = CreateRequestContent(requestBody);
+                        Debug.WriteLine($"Capturing requestBody: {await requestContent.ReadAsStringAsync()}");
+                        response = await client.PostAsync(pathAndQuery, requestContent);
+
                         break;
                     case ConfigurationManager.RequestType.PUT:
                         response = await client.PutAsync(pathAndQuery, CreateRequestContent(requestBody));
@@ -185,9 +211,11 @@ namespace APITestingRunner {
                         break;
                 }
 
+                Debug.WriteLine(response);
+
                 if (response != null) {
                     _resultsStats.Add(new TestResultStatus() {
-                        NumberOfResults = 1,
+                        NumberOfResults = numberOfResults,
                         StatusCode = (int)response.StatusCode
                     });
 
@@ -282,7 +310,7 @@ namespace APITestingRunner {
                     //}
                 }
             } catch (Exception ex) {
-                _errors.Add($"Error has occurred while calling api with url:{client.BaseAddress} with {pathAndQuery} with message: {ex.Message}");
+                _errors.Add($"Error has occurred while calling api with url:{client.BaseAddress} with {pathAndQuery} with message:{onScreenMessage} && exception:  {ex.Message}");
             } finally {
                 _logger.LogInformation(onScreenMessage);
             }
@@ -347,31 +375,36 @@ namespace APITestingRunner {
         /// <returns>Boolean result checking if file already exists.</returns>
         private async Task<ComparissonStatus> logIntoFileAsync(string logLocation, ApiCallResult apiCallResult, bool validateIfFilesMatch = false) {
             _ = _config ?? throw new ArgumentNullException(nameof(_config));
-
-            string resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
-            if (!Directory.Exists(resultsDirectory)) {
-                _ = Directory.CreateDirectory(resultsDirectory);
-            }
-
-            var status = ComparissonStatus.NewFile;
-            var fileName = TestRunner.GenerateResultName(apiCallResult.item, _config.ResultFileNamePattern);
-            var fileOperations = new FileOperations();
-
-            var filePath = Path.Combine(resultsDirectory, fileName);
-            string apiResult = JsonSerializer.Serialize(apiCallResult);
-
-            if (fileOperations.ValidateIfFileExists(filePath)) {
-                var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(FileOperations.GetFileData(filePath));
-
-                if (fileSourceResult is not null) {
-                    status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
+            try {
+                string resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
+                if (!Directory.Exists(resultsDirectory)) {
+                    _ = Directory.CreateDirectory(resultsDirectory);
                 }
 
-            } else {
-                await fileOperations.WriteFile(filePath, apiResult);
-            }
+                var status = ComparissonStatus.NewFile;
+                var fileName = TestRunner.GenerateResultName(apiCallResult.item, _config.ResultFileNamePattern);
+                var fileOperations = new FileOperations();
 
-            return status;
+                var filePath = Path.Combine(resultsDirectory, fileName);
+                string apiResult = JsonSerializer.Serialize(apiCallResult);
+
+                if (fileOperations.ValidateIfFileExists(filePath)) {
+                    var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(FileOperations.GetFileData(filePath));
+
+                    if (fileSourceResult is not null) {
+                        status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
+                    }
+
+                } else {
+                    await fileOperations.WriteFile(filePath, apiResult);
+                }
+                return status;
+            } catch (Exception ex) {
+                Debug.WriteLine(ex);
+
+                _errors.Add("Failed to capture logs into a file");
+                throw;
+            }
         }
 
 

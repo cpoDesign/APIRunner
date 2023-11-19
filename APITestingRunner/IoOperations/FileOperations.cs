@@ -15,7 +15,6 @@ namespace APITestingRunner.IoOperations {
         /// <returns></returns>
         internal async Task WriteFile(string path, string fileContent) {
 
-
             await File.WriteAllTextAsync(path, fileContent);
         }
 
@@ -24,7 +23,7 @@ namespace APITestingRunner.IoOperations {
         }
 
         public static string GetFileData(string filePath) {
-            return File.ReadAllText(filePath).Trim();
+            return File.ReadAllText(filePath, encoding: System.Text.Encoding.UTF8).Trim();
         }
 
     }
