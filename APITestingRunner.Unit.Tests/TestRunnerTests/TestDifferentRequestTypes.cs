@@ -86,7 +86,7 @@ namespace APITestingRunner.Unit.Tests {
             _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{request} /WeatherForecast 200 success"));
         }
 
-
+        // TODO: Fix this text wiremock does not recognise the request when validating against a body
         //[TestMethod]
         //[TestCategory("SimpleAPICallBasedOnConfig")]
         //[DataRow(RequestType.POST)]
@@ -109,7 +109,6 @@ namespace APITestingRunner.Unit.Tests {
         //           .WithHeader("Content-Type", "application/json")
         //           .WithBody(@"{ ""msg"": ""Hello I'm a little bit slow!"" }")
         //   );
-
 
 
         //    Config config = new() {
