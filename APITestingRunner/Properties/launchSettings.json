@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "APITestingRunner": {
+      "commandName": "Project",
+      "commandLineArgs": "--run"
+    }
+  }
+}

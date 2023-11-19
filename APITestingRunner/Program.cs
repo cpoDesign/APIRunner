@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using System.CommandLine;
+using System.Reflection;
 using static ConfigurationManager;
 
 namespace APITestingRunner {
@@ -32,7 +33,7 @@ namespace APITestingRunner {
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
                   },
-      DBConnectionString = "sql server database config",
+      DBConnectionString = null,
       DBQuery = "select id as bindingId from dbo.sampleTable;",
       DBFields = new List<Param>
              {
@@ -77,11 +78,16 @@ namespace APITestingRunner {
       var generateConfig = new Option<bool>
        ("--generateConfig", "an option to generate a new config file with sample data.");
 
-      var config = new Option<string>
-       ("--config", "A path to a custom config file to be used for the runner.");
+      //TODO: add a option for people to provide a custom config path
+      //var config = new Option<string>
+      // ("--config", "A path to a custom config file to be used for the runner.");
 
       var run = new Option<bool>
        ("--run", "Run the tester.");
+
+      var version = new Option<bool>
+       ("--version", "Print version of this tool.");
+
 
       var rootCommand = new RootCommand("Parameter binding example");
       //rootCommand.Add(delayOption);
@@ -93,38 +99,41 @@ namespace APITestingRunner {
       //    },
       //    delayOption, messageOption);
 
-      rootCommand.Add(config);
+      //rootCommand.Add(config);
       rootCommand.Add(generateConfig);
       rootCommand.Add(run);
 
 
       string pathConfigJson = $"{DirectoryServices.AssemblyDirectory}\\config.json";
 
+      rootCommand.SetHandler((version) => {
+        Console.WriteLine(Assembly.GetEntryAssembly().GetName().Version);
+      }, version);
 
-      rootCommand.SetHandler(async (generateConfig) => await new ApiTesterRunner(logger).CreateConfig(pathConfigJson, ApiTesterConfig), generateConfig);
+      rootCommand.SetHandler(async (generateConfig) => {
+        Console.WriteLine($"Started a sample config generation.");
+        await new ApiTesterRunner(logger).CreateConfig(pathConfigJson, ApiTesterConfig);
+        Console.WriteLine($"Config has been generated.");
+      }, generateConfig);
 
-      rootCommand.SetHandler(async (run, config) => {
+      rootCommand.SetHandler(async (run) => {
+
         if (run) {
-          if (File.Exists(config)) {
-            await new ApiTesterRunner(logger).RunTests(config);
-          } else {
-            await new ApiTesterRunner(logger).RunTests(pathConfigJson);
-          }
-        }
-      }, run, config);
+          Console.WriteLine($"received a command to start running tests");
+          Console.WriteLine($"Validating presence of a config file...");
 
+          if (File.Exists(pathConfigJson)) {
+            await new ApiTesterRunner(logger).RunTests(pathConfigJson);
+          } else {
+            Console.WriteLine($"Failed to find config on path: {pathConfigJson}");
+          }
+
+          Console.WriteLine("");
+          Console.WriteLine("Completed test run");
+        }
+      }, run);
 
       _ = await rootCommand.InvokeAsync(args);
     }
-
-    //public static void DisplayIntAndString(int delayOptionValue, string messageOptionValue) {
-    //  Console.WriteLine($"--delay = {delayOptionValue}");
-    //  Console.WriteLine($"--message = {messageOptionValue}");
-    //}
-
-    //public static Task DisplayIntAndString(bool run, string configPath) {
-
-    //  await new ApiTesterRunner().RunTests(configPath);
-    //}
   }
 }

@@ -115,14 +115,21 @@ namespace APITestingRunner {
     public async Task<IEnumerable<DataQueryResult>> GetDataToProcessAsync() {
       _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
+      _logger.LogInformation("Validating database based data source start");
       /// return data source
-      if (!string.IsNullOrWhiteSpace(_config.DBConnectionString) && !string.IsNullOrWhiteSpace(_config.DBQuery) && _config?.DBFields?.Count() > 0) {
+      if (!string.IsNullOrWhiteSpace(_config.DBConnectionString)) {
 
-        return await new DataAccess(_config).FetchDataForRunnerAsync();
-        //yield return await db.FetchDataForRunnerAsync();
-      } else {
-        return new List<DataQueryResult> { new DataQueryResult() { RowId = 0 } };
+        _logger.LogInformation("Found database connection string");
+
+        if (!string.IsNullOrWhiteSpace(_config.DBQuery) && _config?.DBFields?.Count() > 0) {
+
+          _logger.LogInformation("Found database query and db fields. Attempting to load data from database.");
+
+          return await new DataAccess(_config).FetchDataForRunnerAsync();
+        }
       }
+
+      return new List<DataQueryResult> { new DataQueryResult() { RowId = 0 } };
     }
 
     /// <summary>
