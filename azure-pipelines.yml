@@ -32,3 +32,25 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+# GitHubRelease
+# - task: PowerShell@2
+#   displayName: 'Get latest SHA commmit from repo'
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/Account/repo/commits"
+#       $sha = $commits[0].sha
+#       Write-Host "##vso[task.setvariable variable=sha;]$sha"
+
+# - task: GitHubRelease@1
+#   inputs:
+#     gitHubConnection: 'example_github'
+#     repositoryName: 'cpoDesign/APITestingRunner'
+#     action: 'create'
+#     target: '$(sha)'
+#     tagSource: 'userSpecifiedTag'
+#     tag: '$(tag)'
+#     title: 'v$(tag)'
+#     assets: '$(Build.ArtifactStagingDirectory)\release\*.exe'
+#     addChangeLog: false
