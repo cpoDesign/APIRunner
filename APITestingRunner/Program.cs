@@ -22,7 +22,7 @@ namespace APITestingRunner {
       UrlBase = "http://localhost:7055",
       CompareUrlBase = string.Empty,
       CompareUrlPath = string.Empty,
-      UrlPath = "/WeatherForecast",
+      UrlPath = "/WeatherForecast/{bindingTown}",
       RequestBody = null,
       HeaderParam = new List<Param> {
                                 new Param("accept","application/json")
@@ -32,12 +32,14 @@ namespace APITestingRunner {
                   new Param("urlKey", "configKey"),
                   new Param("id", "bindingId")
                 },
-      DBConnectionString = null,
-      DBQuery = null,
-      DBFields = null,
+      DBConnectionString = "set null or enter your connection string",
+      DBQuery = "select id as bindingId, town as bindingTown from table name",
+      DBFields = new List<Param>{
+        new Param("bindingId","bindingId")
+      },
       RequestType = RequestType.GET,
-      ResultsStoreOption = StoreResultsOption.None,
-      ConfigMode = TesterConfigMode.Run,
+      ResultsStoreOption = StoreResultsOption.All,
+      ConfigMode = TesterConfigMode.CaptureAndCompare,
       OutputLocation = DirectoryServices.AssemblyDirectory,
     };
 

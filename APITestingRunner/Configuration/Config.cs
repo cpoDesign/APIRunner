@@ -53,7 +53,7 @@ public class Config {
 
     /// <summary>
     /// Location where responses will be stored.
-    /// Can be null and if yes no responses will be stored even if StoreResults is enabled
+    /// Can be null and if yes no responses will be stored even if StoreResults is enabled.
     /// </summary>
     public string? OutputLocation { get; set; }
 

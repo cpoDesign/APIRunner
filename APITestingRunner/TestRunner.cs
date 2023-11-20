@@ -89,9 +89,13 @@ namespace APITestingRunner {
       if (config is null) throw new ArgumentNullException(nameof(config));
       if (dataQueryResult is null) throw new ArgumentNullException(nameof(dataQueryResult));
 
-      if (!string.IsNullOrWhiteSpace(config.RequestBody)) {
+      return ReplaceValueWithDataSource(config.RequestBody, dataQueryResult);
+    }
+
+    public static string ReplaceValueWithDataSource(string stringToUpdate, DataQueryResult dataQueryResult) {
+      if (!string.IsNullOrWhiteSpace(stringToUpdate)) {
         // we have a value
-        var replaceValues = config.RequestBody;
+        var replaceValues = stringToUpdate;
 
         if (dataQueryResult.Results.Any()) {
           foreach (var item in dataQueryResult.Results) {
@@ -101,6 +105,7 @@ namespace APITestingRunner {
 
         return replaceValues;
       }
+
 
       return string.Empty;
     }
@@ -166,6 +171,9 @@ namespace APITestingRunner {
         _errors.Add("Failed to compose path and query for API request");
         return;
       }
+
+      // update variables from url directly on url
+      pathAndQuery = TestRunner.ReplaceValueWithDataSource(pathAndQuery, item);
 
       try {
 

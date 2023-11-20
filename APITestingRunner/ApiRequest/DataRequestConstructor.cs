@@ -19,6 +19,7 @@ namespace APITestingRunner.ApiRequest {
         _relativeUrl = urlPath;
       }
 
+
       if (_config.UrlParam == null || _config.UrlParam.Count() == 0) {
         return this;
       }

@@ -3,7 +3,6 @@ using FluentAssertions;
 using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
-using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests {
   [TestClass]
@@ -265,9 +264,64 @@ namespace APITestingRunner.Unit.Tests {
       _ = logger.Messages[4].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success Results/request-software-2.json NewFile");
       _ = logger.Messages[5].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json Matching");
 
-      //_ = Path.Combine(testDirectory, "request-music-1.json");
-      //_ = Path.Combine(testDirectory, "request-music-1.json");
-      //_ = Path.Combine(testDirectory, "request-software-3.json");
+      _ = Path.Combine(testDirectory, "request-music-1.json");
+      _ = Path.Combine(testDirectory, "request-software-2.json");
+      _ = Path.Combine(testDirectory, "request-software-3.json");
+    }
+
+
+    [TestMethod]
+    [TestCategory("SimpleAPICallBasedOnDbSource")]
+    [TestCategory("dbcapture")]
+    public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldAppendIdToUrl() {
+
+      server.Given(
+         WireMock.RequestBuilders.Request.Create()
+         .WithPath("/WeatherForecast/1")
+
+         .UsingGet()
+       )
+       .RespondWith(
+           Response.Create()
+               .WithStatusCode(200)
+               .WithHeader("Content-Type", "text/plain")
+               .WithBody("Hello, world!")
+       );
+
+      Config apiTesterConfig = new() {
+        UrlBase = "http://localhost:7055",
+        CompareUrlBase = string.Empty,
+        CompareUrlPath = string.Empty,
+        UrlPath = "/WeatherForecast/{bindingId}",
+        RequestBody = null,
+        HeaderParam = new List<Param> {
+                                new Param("accept","application/json")
+                              },
+        UrlParam = null,
+        DBConnectionString = _dbConnectionStringForTests,
+        DBQuery = "select top 1 id as bindingId from dbo.sampleTable;",
+        DBFields = new List<Param>
+            {
+                    new Param("bindingId", "bindingId"),
+                  },
+        RequestType = RequestType.GET,
+        ResultsStoreOption = StoreResultsOption.None,
+        ConfigMode = TesterConfigMode.Run,
+        OutputLocation = DirectoryServices.AssemblyDirectory,
+      };
+
+      var logger = new TestLogger();
+
+      var testRunner = await new ApiTesterRunner(logger)
+                          .RunTests(apiTesterConfig);
+
+      _ = testRunner.Errors.Should().BeEmpty();
+      _ = logger.Messages.Count().Should().Be(4);
+
+      _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
+      _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
+      _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
+      _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast/1 200 success");
     }
 
 

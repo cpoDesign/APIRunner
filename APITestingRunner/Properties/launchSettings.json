@@ -2,7 +2,7 @@
   "profiles": {
     "APITestingRunner": {
       "commandName": "Project",
-      "commandLineArgs": "--generateConfig"
+      "commandLineArgs": "--run"
     }
   }
 }
