@@ -52,7 +52,7 @@ namespace APITestingRunner {
                         return true;
                       };
 
-      //TODO: conver to HTTPFactory to produce api calls
+      //TODO: convert to HTTPFactory to produce api calls
       HttpClient client = new(handler) {
         BaseAddress = new Uri(_config.UrlBase)
       };
@@ -262,7 +262,7 @@ namespace APITestingRunner {
 
           PopulateResultsData(numberOfResults, response, "test");
 
-          //TODO:implement
+          //TODO:implement APICompare
           ///case TesterConfigMode.APICompare:
           //if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
           //{
