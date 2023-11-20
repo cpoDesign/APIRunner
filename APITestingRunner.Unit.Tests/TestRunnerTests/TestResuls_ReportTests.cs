@@ -14,6 +14,8 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests {
 
       Assert.IsNotNull(results);
       _ = results.Should().HaveCount(0);
+      _ = runner.Errors.Should().HaveCount(1);
+      _ = runner.Errors.First().Should().Be("Failed to populate result for url");
     }
 
     [TestMethod]
