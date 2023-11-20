@@ -15,7 +15,7 @@ public enum TesterConfigMode {
   CaptureAndCompare = 3,
 
   ///// <summary>
-  ///// TODO Implement first
+  ///// TODO Implement APICompare
   ///Realtime compare. Compares the results of two APIs. 
   ///// Good for regression testing of APIs.
   ///// </summary>
