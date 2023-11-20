@@ -1,26 +1,47 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-//Console.WriteLine("Hello, World!");
 
+using Microsoft.Extensions.Logging;
+using System.CommandLine;
+using System.Reflection;
 
-//Console.WriteLine(path);
-//Console.ReadLine();
-
-using static ConfigurationManager;
-
-namespace APITestingRunner
-{
+namespace APITestingRunner {
   /// <summary>
   ///     Provides an eval/print loop for command line argument strings.
+  ///     TODO: implement command line binder https://learn.microsoft.com/en-us/dotnet/standard/commandline/model-binding
   /// </summary>
-  internal static class Program
-  {
+  internal static class Program {
+
     private static bool CreateConfig { get; set; }
 
     private static bool RunTest { get; set; }
 
     private static bool Help { get; set; }
 
+    private static readonly Config ApiTesterConfig = new() {
+      UrlBase = "http://localhost:7055",
+      CompareUrlBase = string.Empty,
+      CompareUrlPath = string.Empty,
+      UrlPath = "/WeatherForecast/{bindingTown}",
+      RequestBody = null,
+      HeaderParam = new List<Param> {
+                                new Param("accept","application/json")
+                              },
+      UrlParam = new List<Param>
+                {
+                  new Param("urlKey", "configKey"),
+                  new Param("id", "bindingId")
+                },
+      DBConnectionString = "set null or enter your connection string",
+      DBQuery = "select id as bindingId, town as bindingTown from table name",
+      DBFields = new List<Param>{
+        new Param("bindingId","bindingId")
+      },
+      RequestType = RequestType.GET,
+      ResultsStoreOption = StoreResultsOption.All,
+      ConfigMode = TesterConfigMode.CaptureAndCompare,
+      OutputLocation = DirectoryServices.AssemblyDirectory,
+    };
 
     /// <summary>
     ///     Returns a "pretty" string representation of the provided Type; specifically, corrects the naming of generic Types
@@ -28,8 +49,7 @@ namespace APITestingRunner
     /// </summary>
     /// <param name="type">The type for which the colloquial name should be created.</param>
     /// <returns>A "pretty" string representation of the provided Type.</returns>
-    public static string ToColloquialString(this Type type)
-    {
+    public static string ToColloquialString(this Type type) {
       return !type.IsGenericType ? type.Name : type.Name.Split('`')[0] + "<" + string.Join(", ", type.GetGenericArguments().Select(a => a.ToColloquialString())) + ">";
     }
 
@@ -37,309 +57,109 @@ namespace APITestingRunner
     ///     Application entry point
     /// </summary>
     /// <param name="args">Command line arguments</param>
-    private static async Task Main(string[] args)
-    {
-      // enable ctrl+c
-      Console.CancelKeyPress += (o, e) =>
-      {
-        Environment.Exit(1);
-      };
+    private static async Task Main(string[] args) {
 
 
-      while (true)
-      {
-        Console.Write("> ");
+      using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+      ILogger logger = loggerFactory.CreateLogger<ApiTesterRunner>();
 
-        string input = Console.ReadLine();
+      //#region sample
+      //var delayOption = new Option<int>
+      // ("--delay", "An option whose argument is parsed as an int.");
 
-        if (input == "exit")
-          break;
+      //var messageOption = new Option<string>
+      //    ("--message", "An option whose argument is parsed as a string.");
 
-        string pathConfigJson = $"{DirectoryServices.AssemblyDirectory}\\config.json";
-        Console.WriteLine("==========CreateConfigForSingleAPICall============");
+      //#endregion
 
-        //CreateConfigForSingleAPICall(pathConfigJson);
+      var generateConfig = new Option<bool>
+       ("--generateConfig", "An option to generate a new config file with sample data.");
 
-        //await IndividualActions.RunTests(pathConfigJson);
+      //TODO: add a option for people to provide a custom config path
+      //var config = new Option<string>
+      // ("--config", "A path to a custom config file to be used for the runner.");
 
-        //Console.ReadLine();
+      var run = new Option<bool>
+       ("--run", "Run the tester.");
 
-        //Console.WriteLine("==========CreateConfigForSingleAPICallWithUrlParam============");
+      var version = new Option<bool>
+       ("--version", "Print version of this tool.");
 
-        //CreateConfigForSingleAPICallWithUrlParam(pathConfigJson);
+      var rootCommand = new RootCommand("Parameter binding example");
+      //rootCommand.Add(delayOption);
+      //rootCommand.Add(messageOption);
 
-        //await IndividualActions.RunTests(pathConfigJson);
+      //rootCommand.SetHandler(
+      //    (delayOptionValue, messageOptionValue) => {
+      //      DisplayIntAndString(delayOptionValue, messageOptionValue);
+      //    },
+      //    delayOption, messageOption);
 
-
-        //Console.ReadLine();
-
-        //Console.WriteLine("==========CreateConfigForDatabaseBasedAPICall============");
-
-        //CreateConfigForDatabaseBasedAPICall(pathConfigJson);
-
-        //await IndividualActions.RunTests(pathConfigJson);
-
-        //Console.WriteLine("======================");
-
-
-        //Console.ReadLine();
-
-        //Console.WriteLine("==========CreateConfigForDatabaseBasedAPICall============");
-
-        //CreateConfigForDatabaseBasedAPICall(pathConfigJson, StoreResultsOption.None);
-
-        //await IndividualActions.RunTests(pathConfigJson);
-
-        //Console.WriteLine("======================");
+      //rootCommand.Add(config);
+      rootCommand.Add(generateConfig);
+      rootCommand.Add(run);
 
 
-        //Console.ReadLine();
+      string pathConfigJson = $"{DirectoryServices.AssemblyDirectory}\\config.json";
 
-        //Console.WriteLine("==========CreateConfigForDatabaseBasedAPICall with capture mode============");
+      rootCommand.SetHandler((version) => {
+        logger.LogInformation(Assembly.GetEntryAssembly().GetName().Version.MajorRevision.ToString());
 
-        //CreateConfigForDatabaseBasedAPICallWithFailures(pathConfigJson, StoreResultsOption.FailuresOnly);
-        //await IndividualActions.RunTests(pathConfigJson);
-        //Console.WriteLine("======================");
+      }, version);
 
-        //Console.ReadLine();
+      //rootCommand.SetHandler(async (generateConfig) => {
+      //  logger.LogInformation($"Started a sample config generation.");
 
-        //Console.WriteLine("==========CreateConfigForDatabaseBasedAPIComparrisonCall============");
+      //  await new ApiTesterRunner(logger)
+      //  .CreateConfig(pathConfigJson, ApiTesterConfig);
 
-        //CreateConfigForDatabaseBasedAPIComparrisonCall(pathConfigJson, StoreResultsOption.None);
+      //  logger.LogInformation($"Config has been generated.");
 
-        //await IndividualActions.RunTests(pathConfigJson);
+      //});
 
-        //Console.WriteLine("======================");
+      rootCommand.SetHandler(async (run, version, generateConfig) => {
 
-        Console.ReadLine();
+        if (run) {
+          logger.LogInformation($"received a command to start running tests");
+          logger.LogInformation($"Validating presence of a config file...");
 
-        Console.WriteLine("==========CreateConfigForDatabaseBasedAPIComparrisonCall============");
+          if (File.Exists(pathConfigJson)) {
+            try {
+              await new ApiTesterRunner(logger).RunTests(pathConfigJson);
+            } catch (Exception ex) {
+              logger.LogInformation($"Failed to run runner Exception.{ex.Message}");
 
-        CreateConfigForSingleAPICallWithUrlParamAndBodyModel(pathConfigJson);
+              if (ex.InnerException != null) {
+                logger.LogInformation($"Inner exception Exception.{ex.InnerException.Message}");
+              }
+            }
+          } else {
+            logger.LogInformation($"Failed to find config on path: {pathConfigJson}");
+          }
 
-        await IndividualActions.RunTests(pathConfigJson);
+          logger.LogInformation("");
+          logger.LogInformation("Completed test run");
+        }
 
-        Console.WriteLine("======================");
-      }
+        if (generateConfig) {
+          logger.LogInformation($"Started a sample config generation.");
 
+          await new ApiTesterRunner(logger)
+          .CreateConfig(pathConfigJson, ApiTesterConfig);
 
-      Console.WriteLine("completed run");
-      _ = Console.ReadKey();
-    }
+          logger.LogInformation($"Config has been generated.");
+          return;
+        }
 
-    private static void CreateConfigForSingleAPICall(string pathConfigJson)
-    {
-      Config config = new()
-      {
-        UrlBase = "https://localhost:7055/WeatherForecast",
-        CompareUrlBase = string.Empty,
-        CompareUrlPath = string.Empty,
-        UrlPath = "/WeatherForecast",
-        UrlParam = null,
-        RequestBody = null,
+        if (version) {
+          logger.LogInformation(Assembly.GetEntryAssembly().GetName().Version.MajorRevision.ToString());
+          return;
+        }
 
-        HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-        DBConnectionString = null,
-        DBQuery = null,
-        DBFields = null,
-        RequestType = RequestType.GET,
-        ResultsStoreOption = StoreResultsOption.None,
-        ConfigMode = TesterConfigMode.Run,
-        LogLocation = DirectoryServices.AssemblyDirectory
-      };
+        return;
+      }, run, version, generateConfig);
 
-      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
-    }
-
-    private static void CreateConfigForSingleAPICallWithUrlParam(string pathConfigJson)
-    {
-      Config config = new()
-      {
-        UrlBase = "https://localhost:7055",
-        CompareUrlBase = string.Empty,
-        CompareUrlPath = string.Empty,
-        UrlPath = "/WeatherForecast/GetWeatherForecastForLocation",
-        UrlParam = new List<Param>
-        {
-          new Param("location","UK")
-        },
-        HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-        RequestBody = null,
-        DBConnectionString = null,
-        DBQuery = null,
-        DBFields = null,
-        RequestType = RequestType.GET,
-        ResultsStoreOption = StoreResultsOption.None,
-        ConfigMode = TesterConfigMode.Run,
-        LogLocation = DirectoryServices.AssemblyDirectory
-      };
-
-      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
-    }
-
-
-    private static void CreateConfigForDatabaseBasedAPICall(string pathConfigJson, StoreResultsOption storeResultsOption = StoreResultsOption.None)
-    {
-      Config config = new()
-      {
-        UrlBase = "https://localhost:7055",
-        CompareUrlBase = string.Empty,
-        CompareUrlPath = string.Empty,
-        UrlPath = "/Data",
-        UrlParam = new List<Param>
-      {
-        new Param("urlKey", "test"),
-        new Param("id", "sqlId")
-      },
-        HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-        RequestBody = null,
-        DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
-        DBQuery = "select id as sqlId from dbo.sampleTable;",
-        DBFields = new List<Param>
-      {
-        new Param("sqlId", "sqlId")
-      },
-        RequestType = RequestType.GET,
-        ResultsStoreOption = storeResultsOption,
-        ConfigMode = TesterConfigMode.Run,
-        LogLocation = DirectoryServices.AssemblyDirectory
-      };
-
-      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
-    }
-
-    private static void CreateConfigForDatabaseBasedAPICallWithFailures(string pathConfigJson, StoreResultsOption storeResultsOption = StoreResultsOption.None)
-    {
-      Config config = new()
-      {
-        UrlBase = "https://localhost:7055",
-        CompareUrlBase = string.Empty,
-        CompareUrlPath = string.Empty,
-        UrlPath = "/WithFailure",
-        UrlParam = new List<Param>
-      {
-        new Param("urlKey", "test"),
-        new Param("id", "sqlId")
-      },
-        HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-        RequestBody = null,
-        DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
-        DBQuery = "select id as sqlId from dbo.sampleTable;",
-        DBFields = new List<Param>
-      {
-        new Param("sqlId", "sqlId")
-      },
-        RequestType = RequestType.GET,
-        ResultsStoreOption = storeResultsOption,
-        ConfigMode = TesterConfigMode.Capture,
-        LogLocation = DirectoryServices.AssemblyDirectory
-      };
-
-      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
-    }
-
-    private static void CreateConfigForDatabaseBasedAPIComparrisonCall(string pathConfigJson, StoreResultsOption storeResultsOption = StoreResultsOption.None)
-    {
-      Config config = new()
-      {
-        UrlBase = "https://localhost:7055",
-        CompareUrlBase = "https://localhost:7055",
-        UrlPath = "/Data",
-        CompareUrlPath = "/DataV2",
-        UrlParam = new List<Param>
-      {
-        new Param("urlKey", "test"),
-        new Param("id", "sqlId")
-      },
-        HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-        RequestBody = null,
-        DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
-        DBQuery = "select id as sqlId from dbo.sampleTable;",
-        DBFields = new List<Param>
-      {
-        new Param("sqlId", "sqlId")
-      },
-        RequestType = RequestType.GET,
-        ResultsStoreOption = storeResultsOption,
-        ConfigMode = TesterConfigMode.APICompare,
-        LogLocation = DirectoryServices.AssemblyDirectory
-      };
-
-      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
-    }
-
-
-    private static void CreateConfigForSingleAPICallWithUrlParamAndBodyModel(string pathConfigJson)
-    {
-      Config config = new()
-      {
-        UrlBase = "https://localhost:7055",
-        CompareUrlBase = string.Empty,
-        CompareUrlPath = string.Empty,
-        UrlPath = "/datamodel/123456789",
-        UrlParam = new List<Param>
-        {
-          new Param("location","UK")
-        },
-        HeaderParam = new List<Param> {
-        new Param("accept","application/json")
-      },
-        RequestBody = "{Id={sqlId},StaticData=\"data\"}",
-        DBConnectionString = null,
-        DBQuery = null,
-        DBFields = null,
-        RequestType = RequestType.GET,
-        ResultsStoreOption = StoreResultsOption.None,
-        ConfigMode = TesterConfigMode.Run,
-        LogLocation = DirectoryServices.AssemblyDirectory
-      };
-
-      _ = IndividualActions.CreateConfig(DirectoryServices.AssemblyDirectory, pathConfigJson, config);
-    }
-  }
-
-  public class IndividualActions
-  {
-    public static async Task CreateConfig(string directory, string pathConfigJson, Config config)
-    {
-      ConfigurationManager configManager = new();
-
-      Console.WriteLine($"Created config on path: {pathConfigJson}");
-      await configManager.CreateConfig(pathConfigJson, config);
-      return;
-
-    }
-    public static async Task RunTests(string pathConfigJson)
-    {
-      Console.WriteLine($"Loading config on path: {pathConfigJson}");
-
-      ConfigurationManager configManager = new();
-
-      Config? configSettings = await configManager.GetConfigAsync(pathConfigJson);
-      TestRunner testRunner = new();
-      await testRunner.ApplyConfig(configSettings);
-
-
-      // execute db data load only has some data in it
-      if (!string.IsNullOrWhiteSpace(configSettings.DBConnectionString) && !string.IsNullOrWhiteSpace(configSettings.DBQuery) && configSettings.DBFields.Count() > 0)
-      {
-        testRunner = await testRunner.GetTestRunnerDbSet();
-      }
-
-      testRunner = await testRunner.RunTestsAsync();
-
-      _ = await testRunner.PrintResults();
-      return;
+      _ = await rootCommand.InvokeAsync(args);
     }
   }
 }

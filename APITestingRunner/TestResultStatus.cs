@@ -2,9 +2,17 @@
 
 namespace APITestingRunner
 {
-  public class TestResultStatus
-  {
-    public int StatusCode { get; set; }
-    public int NumberOfResults { get; set; } = 0;
-  };
+    public class TestResultStatus
+    {
+        public int StatusCode { get; set; }
+        public int NumberOfResults { get; set; } = 0;
+    };
+
+    public class TestConstants
+    {
+        /// <summary>
+        /// Name of the test directory.
+        /// </summary>
+        public static string TestOutputDirectory = "Results";
+    }
 }
