@@ -221,10 +221,6 @@ namespace APITestingRunner {
         Debug.WriteLine(response);
 
         if (response != null) {
-          _resultsStats.Add(new TestResultStatus() {
-            NumberOfResults = numberOfResults,
-            StatusCode = (int)response.StatusCode
-          });
 
           onScreenMessage = GenerateResponseMessage(_config.RequestType, pathAndQuery, response);
           string content = await response.Content.ReadAsStringAsync();
@@ -263,6 +259,8 @@ namespace APITestingRunner {
               _errors.Add("This option is currently not supported");
               throw new NotImplementedException();
           }
+
+          PopulateResultsData(numberOfResults, response, "test");
 
           //TODO:implement
           ///case TesterConfigMode.APICompare:
@@ -321,6 +319,30 @@ namespace APITestingRunner {
       } finally {
         _logger.LogInformation(onScreenMessage);
       }
+    }
+
+    public void PopulateResultsData(int numberOfResults, HttpResponseMessage? response, string url) {
+
+      if (response == null) {
+        // response was not set so something went wrong adding only an error
+        _errors.Add($"Failed to populate result for {url}");
+        return;
+      }
+
+      var existingCode = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)response.StatusCode);
+
+      if (existingCode == null) {
+        _resultsStats.Add(new TestResultStatus() {
+          NumberOfResults = numberOfResults,
+          StatusCode = (int)response.StatusCode
+        });
+      } else {
+        existingCode.NumberOfResults += numberOfResults;
+      }
+    }
+
+    public List<TestResultStatus> GetResults() {
+      return _resultsStats;
     }
 
     public string GenerateResponseMessage(RequestType requestType, string relativeUrl, HttpResponseMessage? response) {
@@ -436,15 +458,15 @@ namespace APITestingRunner {
     }
 
     internal async Task<TestRunner> PrintResultsSummary() {
-      Console.WriteLine("==========Status==========");
+      _logger.LogInformation("==========Status==========");
       foreach (TestResultStatus item in _resultsStats) {
-        Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
+        _logger.LogInformation($"{item.StatusCode} - Count: {item.NumberOfResults}");
       }
 
       if (_errors.Count > 0) {
-        Console.WriteLine("==========Errors==========");
+        _logger.LogInformation("==========Errors==========");
         foreach (string error in _errors) {
-          Console.WriteLine(error);
+          _logger.LogInformation(error);
         }
       }
 
