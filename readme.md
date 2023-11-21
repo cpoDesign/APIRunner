@@ -1,16 +1,16 @@
 # Promethean API Test Runner
 
 TODO:
-outstanding items
+
+1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
+1. Introduce -> 
+
 
 command line options
--- generate a config
+TODO
 
-1  wiremock add validation for a api call with setup for post with data so it matches a result
-1. Create a status report
-    1. Add analysis on how many ware successfull and how many not
-1. 1. Compatibility 
-we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
+
+
 
 
 
