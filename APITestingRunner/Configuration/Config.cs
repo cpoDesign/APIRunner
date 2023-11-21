@@ -2,7 +2,8 @@
 
 using static ConfigurationManager;
 
-public class Config {
+public class Config
+{
     /// <summary>
     /// Base path of the url.
     /// </summary>

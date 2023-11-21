@@ -3,7 +3,8 @@
 using APITestingRunner.Database;
 using System.Net;
 
-namespace APITestingRunner.ApiRequest {
+namespace APITestingRunner.ApiRequest
+{
 
     /// <summary>
     /// Container for an api call result.
@@ -21,6 +22,6 @@ namespace APITestingRunner.ApiRequest {
         string url,
         DataQueryResult? item,
         bool IsSuccessStatusCode,
-        List<string>? CompareResults = null) {
+        List<string>? CompareResults = null)    {
     }
 }
