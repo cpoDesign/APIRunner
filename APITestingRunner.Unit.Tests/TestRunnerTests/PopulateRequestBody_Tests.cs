@@ -1,14 +1,18 @@
 ﻿using FluentAssertions;
 using static ConfigurationManager;
 
-namespace APITestingRunner.Unit.Tests {
+namespace APITestingRunner.Unit.Tests
+{
     [TestClass]
-    public class PopulateRequestBody_Tests {
+    public class PopulateRequestBody_Tests
+    {
 
 
         [TestMethod]
-        public void PopulateRequestBody_ShouldThrowExcpetion_becauseOfconfig() {
-            Action action = () => TestRunner.PopulateRequestBody(null, new Database.DataQueryResult() {
+        public void PopulateRequestBody_ShouldThrowExcpetion_becauseOfconfig()
+        {
+            Action action = () => TestRunner.PopulateRequestBody(null, new Database.DataQueryResult()
+            {
                 RowId = 1,
                 Results = new List<KeyValuePair<string, string>> {
                 new KeyValuePair<string, string>("requestBody","JoeDoe"),
@@ -19,16 +23,20 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void PopulateRequestBody_ShouldThrowExcpetion_becauseOfNoDataQueryResult() {
-            Config config = new() {
+        public void PopulateRequestBody_ShouldThrowExcpetion_becauseOfNoDataQueryResult()
+        {
+            Config config = new()
+            {
                 UrlBase = "http://localhost:7055",
                 CompareUrlBase = string.Empty,
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = new List<Param>
+                {
                 },
-                UrlParam = new List<Param> {
+                UrlParam = new List<Param>
+                {
                 },
                 DBConnectionString = null,
                 DBQuery = "select id as bindingId, userName as requestBody from dbo.sampleTable where id in (1,3)",
@@ -50,9 +58,11 @@ namespace APITestingRunner.Unit.Tests {
         [DataRow(null, "")]
         [DataRow("{\"name\":\"{requestBody}\"}", "{\"name\":\"JoeDoe\"}")]
         [DataRow("{\"name\":\"{requestBody}\",\"id\":\"{bindingId}\"}", "{\"name\":\"JoeDoe\",\"id\":\"3\"}")]
-        public void PopulateRequestBody(string request, string expected) {
+        public void PopulateRequestBody(string request, string expected)
+        {
 
-            Config config = new() {
+            Config config = new()
+            {
                 UrlBase = "http://localhost:7055",
                 CompareUrlBase = string.Empty,
                 CompareUrlPath = string.Empty,
@@ -79,7 +89,8 @@ namespace APITestingRunner.Unit.Tests {
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
-            var actual = TestRunner.PopulateRequestBody(config, new Database.DataQueryResult() {
+            var actual = TestRunner.PopulateRequestBody(config, new Database.DataQueryResult()
+            {
                 RowId = 1,
                 Results = new List<KeyValuePair<string, string>> {
                 new KeyValuePair<string, string>("requestBody","JoeDoe"),

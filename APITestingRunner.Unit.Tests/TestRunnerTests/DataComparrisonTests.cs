@@ -1,13 +1,16 @@
 ﻿using APITestingRunner.ApiRequest;
 using FluentAssertions;
 
-namespace APITestingRunner.Unit.Tests {
+namespace APITestingRunner.Unit.Tests
+{
 
     [TestClass]
-    public class DataComparrisonTests {
+    public class DataComparrisonTests
+    {
 
         [TestMethod]
-        public void CompareAPiResults_ShouldReturnMatching() {
+        public void CompareAPiResults_ShouldReturnMatching()
+        {
             ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
 
             ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
@@ -19,7 +22,8 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void CompareAPiResults_ShouldReturnDifferent() {
+        public void CompareAPiResults_ShouldReturnDifferent()
+        {
             ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
             ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, true, null);
             ComparissonStatus expectedResult = ComparissonStatus.Different;
@@ -30,7 +34,8 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void CompareAPiResults_ShouldReturnDifferent_StatusCodeIsDifferent() {
+        public void CompareAPiResults_ShouldReturnDifferent_StatusCodeIsDifferent()
+        {
             ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
             ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.Accepted, "test", null, null, null, true, null);
             ComparissonStatus expectedResult = ComparissonStatus.Different;
@@ -40,7 +45,8 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void CompareAPiResults_ShouldReturnDifferent_IsSuccessCodeIsDifferent() {
+        public void CompareAPiResults_ShouldReturnDifferent_IsSuccessCodeIsDifferent()
+        {
             ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
             ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, false, null);
             ComparissonStatus expectedResult = ComparissonStatus.Different;

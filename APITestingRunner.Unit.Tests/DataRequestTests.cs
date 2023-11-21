@@ -3,14 +3,18 @@ using APITestingRunner.Database;
 using FluentAssertions;
 using static ConfigurationManager;
 
-namespace APITestingRunner.Unit.Tests {
+namespace APITestingRunner.Unit.Tests
+{
     [TestClass]
-    public class DataRequestTests {
+    public class DataRequestTests
+    {
         private Config? _config;
 
         [TestInitialize]
-        public void TestInit() {
-            _config = new() {
+        public void TestInit()
+        {
+            _config = new()
+            {
                 UrlBase = "http://localhost:5152/",
                 CompareUrlBase = null,
                 CompareUrlPath = null,
@@ -36,14 +40,16 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void DataRequestGetFullUrl() {
+        public void DataRequestGetFullUrl()
+        {
             var result = new DataRequestConstructor().AddBaseUrl(_config.UrlBase).GetFullUrl();
             Assert.AreEqual("http://localhost:5152/", result);
         }
 
 
         [TestMethod]
-        public void DataRequestGetFullUrlWithEndpoint() {
+        public void DataRequestGetFullUrlWithEndpoint()
+        {
 
             _config.UrlParam = new List<Param>();
             var result = new DataRequestConstructor()
@@ -55,7 +61,8 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void DataRequestGetOnlyPathAndQuery() {
+        public void DataRequestGetOnlyPathAndQuery()
+        {
             _config.UrlParam = new List<Param>();
             var result = new DataRequestConstructor()
                             .AddBaseUrl("http://localhost:5152")
@@ -66,14 +73,16 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void ComposeRequest_PassNullUrlParam_WillSkipArgumentGeneration() {
+        public void ComposeRequest_PassNullUrlParam_WillSkipArgumentGeneration()
+        {
             _config.UrlParam = null;
             var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, null).GetFullUrl();
             Assert.AreEqual("/Data", result);
         }
 
         [TestMethod]
-        public void ComposeRequest_PassNullUrlParam_WillSkipArgumentDbMatching() {
+        public void ComposeRequest_PassNullUrlParam_WillSkipArgumentDbMatching()
+        {
             _config.UrlParam = new List<Param>
       {
         new Param("location","Paris")
@@ -83,15 +92,18 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void ComposeRequest_PassEmptyUrlParam_ReturnVanillaPath() {
-            _config.UrlParam = new List<Param> {
+        public void ComposeRequest_PassEmptyUrlParam_ReturnVanillaPath()
+        {
+            _config.UrlParam = new List<Param>
+            {
             };
             var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, null).GetFullUrl();
             Assert.AreEqual("/Data", result);
         }
 
         [TestMethod]
-        public void ComposeRequest_PassNullUrlParam_AppliesArgumentGeneration() {
+        public void ComposeRequest_PassNullUrlParam_AppliesArgumentGeneration()
+        {
             var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, null).GetFullUrl();
             Assert.IsTrue(result.Contains("urlKey"));
             Assert.IsTrue(result.Contains("id"));
@@ -99,7 +111,8 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void ComposeRequest_PassNullDBFields_AppliesArgumentGeneration() {
+        public void ComposeRequest_PassNullDBFields_AppliesArgumentGeneration()
+        {
             _config.DBFields = null;
             var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, null).GetFullUrl();
             Assert.IsTrue(result.Contains("urlKey"));
@@ -108,14 +121,16 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void ComposeRequest_PassMatchingDbFieldReplacesValues() {
+        public void ComposeRequest_PassMatchingDbFieldReplacesValues()
+        {
 
             var dbResult = new List<KeyValuePair<string, string>>
               {
                 new KeyValuePair<string, string> ("sqlId", "123")
               };
 
-            var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, new DataQueryResult {
+            var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, new DataQueryResult
+            {
                 RowId = 1,
                 Results = dbResult
             }).GetFullUrl();
@@ -126,7 +141,8 @@ namespace APITestingRunner.Unit.Tests {
         }
 
         [TestMethod]
-        public void ComposeRequest_PassMatchingDbFieldReplacesValuesMultiple() {
+        public void ComposeRequest_PassMatchingDbFieldReplacesValuesMultiple()
+        {
 
             var dbResult = new List<KeyValuePair<string, string>> {
                 new KeyValuePair<string, string> ("sqlId", "123"),
@@ -138,7 +154,8 @@ namespace APITestingRunner.Unit.Tests {
             // add the configuration to ensure the application is aware of the mapping
             _config.DBFields.Add(new Param("sqlName", "sqlName"));
 
-            var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, new DataQueryResult {
+            var result = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, new DataQueryResult
+            {
                 RowId = 1,
                 Results = dbResult
             })
