@@ -49,13 +49,15 @@ namespace APITestingRunner.Unit.Tests
             _ = new DataAccess(_config, new Mock<ILogger>().Object);
         }
 
-        //Type Safety takes care of this - shouldn't be needed.
+        //TODO: Review together - type Safety takes care of this - shouldn't be needed.
         [TestMethod]
         public void DataAccess_Tests_MissingConfig_ConstructorShouldThrowArgumentNullException()
         {
             _ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(null, null));
         }
-        [TestMethod]
+
+		//TODO: Review together - type Safety takes care of this - shouldn't be needed.
+		[TestMethod]
         public void DataAccess_Tests_MissingLogger_ConstructorShouldThrowArgumentNullException()
         {
             _ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(_config, null));
@@ -64,7 +66,7 @@ namespace APITestingRunner.Unit.Tests
         [TestMethod]
         public async Task FetchDataForRunnerAsync_PassNullForConnectionString_shouldThrowConfigurationErrorsException()
         {
-            Config testConfig = _config;
+            var testConfig = _config;
             try
             {
                 testConfig.DBConnectionString = null;

@@ -39,7 +39,7 @@ namespace APITestingRunner
 
             ConfigurationManager configManager = new();
 
-            Config? configSettings = await configManager.GetConfigAsync(pathConfigJson);
+            var configSettings = await configManager.GetConfigAsync(pathConfigJson);
             TestRunner testRunner = new(_logger);
             await testRunner.ApplyConfig(configSettings);
 

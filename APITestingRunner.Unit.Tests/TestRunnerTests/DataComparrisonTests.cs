@@ -8,14 +8,13 @@ namespace APITestingRunner.Unit.Tests
     public class DataComparrisonTests
     {
 
+		//TODO: Review together tests for any that shoudl be type-safe
         [TestMethod]
         public void CompareAPiResults_ShouldReturnMatching()
         {
-            ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
-
-            ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
-            ComparissonStatus expectedResult = ComparissonStatus.Matching;
-
+            var apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
+            var fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
+            var expectedResult = ComparissonStatus.Matching;
 
             var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
@@ -24,9 +23,9 @@ namespace APITestingRunner.Unit.Tests
         [TestMethod]
         public void CompareAPiResults_ShouldReturnDifferent()
         {
-            ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
-            ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, true, null);
-            ComparissonStatus expectedResult = ComparissonStatus.Different;
+            var apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
+            var fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, true, null);
+            var expectedResult = ComparissonStatus.Different;
 
 
             var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
@@ -36,9 +35,9 @@ namespace APITestingRunner.Unit.Tests
         [TestMethod]
         public void CompareAPiResults_ShouldReturnDifferent_StatusCodeIsDifferent()
         {
-            ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
-            ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.Accepted, "test", null, null, null, true, null);
-            ComparissonStatus expectedResult = ComparissonStatus.Different;
+            var apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
+            var fileResult = new ApiCallResult(System.Net.HttpStatusCode.Accepted, "test", null, null, null, true, null);
+            var expectedResult = ComparissonStatus.Different;
 
             var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
@@ -47,9 +46,9 @@ namespace APITestingRunner.Unit.Tests
         [TestMethod]
         public void CompareAPiResults_ShouldReturnDifferent_IsSuccessCodeIsDifferent()
         {
-            ApiCallResult apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
-            ApiCallResult fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, false, null);
-            ComparissonStatus expectedResult = ComparissonStatus.Different;
+            var apiResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
+            var fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, false, null);
+            var expectedResult = ComparissonStatus.Different;
 
             var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);

@@ -14,8 +14,10 @@ namespace APITestingRunner.Unit.Tests
         private WireMockServer? server;
 
         [TestInitialize]
-        public void Initialize()
+        public new void Initialize()
         {
+            base.Initialize();
+
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
 
@@ -51,15 +53,13 @@ namespace APITestingRunner.Unit.Tests
         {
             _ = server ?? throw new ArgumentNullException(nameof(server));
 
-            server.Given(
-                 SetupMockForARequestType(request)
-           )
-           .RespondWith(
-               Response.Create()
-                   .WithStatusCode(200)
-                   .WithHeader("Content-Type", "text/plain")
-                   .WithBody("Hello, world!")
-           );
+            server.Given(SetupMockForARequestType(request))
+                .RespondWith(
+                    Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("Hello, world!")
+                );
 
             Config config = new()
             {
@@ -67,11 +67,9 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlBase = string.Empty,
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
-                UrlParam = null,
+                UrlParam = null!,
                 RequestBody = null,
-                HeaderParam = new List<Param> {
-                                new Param("accept","application/json")
-                              },
+                HeaderParam = new List<Param> { new Param("accept","application/json") },
                 DBConnectionString = null,
                 DBQuery = null,
                 DBFields = null,
@@ -82,13 +80,9 @@ namespace APITestingRunner.Unit.Tests
             };
 
             var logger = new TestLogger();
-
-            var testRunner = await new ApiTesterRunner(logger)
-                                .RunTests(config);
-
+            var testRunner = await new ApiTesterRunner(logger).RunTests(config);
 
             _ = testRunner.Errors.Should().BeEmpty();
-
             _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{request} /WeatherForecast 200 success"));
         }
 

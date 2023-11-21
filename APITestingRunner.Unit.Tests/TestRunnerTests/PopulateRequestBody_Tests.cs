@@ -1,13 +1,10 @@
 ﻿using FluentAssertions;
-using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests
 {
-    [TestClass]
+	[TestClass]
     public class PopulateRequestBody_Tests
     {
-
-
         [TestMethod]
         public void PopulateRequestBody_ShouldThrowExcpetion_becauseOfconfig()
         {

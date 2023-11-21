@@ -19,9 +19,11 @@ namespace APITestingRunner.Unit.Tests
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
+			_ = state ?? throw new ArgumentNullException(nameof(state));
+
             if (logLevel == LogLevel.Information)
             {
-                Messages.Add(new Tuple<LogLevel, string>(logLevel, state.ToString()));
+                Messages.Add(new Tuple<LogLevel, string>(logLevel, state.ToString()!));
             }
             else
             {
