@@ -39,7 +39,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/Account/repo/commits"
+      $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
       $sha = $commits[0].sha
       Write-Host "##vso[task.setvariable variable=sha;]$sha"
 
