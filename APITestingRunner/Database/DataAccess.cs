@@ -1,4 +1,4 @@
-﻿using APITestingRunner.Excetions;
+﻿using APITestingRunner.Exceptions;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;

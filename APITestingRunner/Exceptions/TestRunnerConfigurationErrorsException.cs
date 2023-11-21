@@ -1,8 +1,5 @@
-﻿using System.Runtime.Serialization;
-
-namespace APITestingRunner.Excetions
+﻿namespace APITestingRunner.Exceptions
 {
-    [Serializable]
     public class TestRunnerConfigurationErrorsException : Exception
     {
         public TestRunnerConfigurationErrorsException()
@@ -17,8 +14,9 @@ namespace APITestingRunner.Excetions
         {
         }
 
-        protected TestRunnerConfigurationErrorsException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-    }
+		// TODO: Review - https://learn.microsoft.com/en-us/dotnet/fundamentals/syslib-diagnostics/syslib0051#workaround
+		//protected TestRunnerConfigurationErrorsException(SerializationInfo info, StreamingContext context) : base(info, context)
+		//{
+		//}
+	}
 }
