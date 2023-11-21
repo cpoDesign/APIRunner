@@ -1,5 +1,5 @@
 ﻿using APITestingRunner.Database;
-using APITestingRunner.Excetions;
+using APITestingRunner.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
