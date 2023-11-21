@@ -218,7 +218,7 @@ namespace APITestingRunner
                         if (string.IsNullOrWhiteSpace(requestBody))
                         {
                             // we are using only data in url query
-                            response = await client.GetAsync(pathAndQuery);
+                            response = await client.GetAsync($"{_config.UrlBase}{pathAndQuery}");
                         }
                         else
                         {
