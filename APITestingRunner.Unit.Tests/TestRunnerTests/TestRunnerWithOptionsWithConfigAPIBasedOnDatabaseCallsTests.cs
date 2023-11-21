@@ -9,12 +9,13 @@ namespace APITestingRunner.Unit.Tests
     [TestClass]
     public class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests : TestBase
     {
-
-        private WireMockServer server;
+        private WireMockServer server = null!;
 
         [TestInitialize]
-        public void Initialize()
+        public new void Initialize()
         {
+            base.Initialize();
+
             // This starts a new mock server instance listening at port 9876
             server = WireMockServer.Start(7055);
 

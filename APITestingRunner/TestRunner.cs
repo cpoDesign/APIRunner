@@ -1,4 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 
 using APITestingRunner.ApiRequest;
 using APITestingRunner.Database;
@@ -11,7 +11,7 @@ using System.Text.Json;
 
 namespace APITestingRunner
 {
-    public class TestRunner
+	public class TestRunner
     {
         private Config? _config;
         private readonly IEnumerable<DataQueryResult>? _dbBasedItems = new List<DataQueryResult>();
@@ -80,7 +80,7 @@ namespace APITestingRunner
 
             if (headerParam != null && headerParam.Count > 0)
             {
-                foreach (Param item in _config.HeaderParam)
+                foreach (var item in _config.HeaderParam)
                 {
                     client.DefaultRequestHeaders.Add(item.Name, item.value);
                 }
@@ -89,8 +89,10 @@ namespace APITestingRunner
 
         private async Task MakeApiCall(HttpClient client)
         {
-            var numberOfResults = 0;
-            foreach (DataQueryResult dataQueryResult in await GetDataToProcessAsync())
+			_ = _config ?? throw new ArgumentNullException(nameof(_config));
+
+			var numberOfResults = 0;
+            foreach (var dataQueryResult in await GetDataToProcessAsync())
             {
                 await MakeApiForCollectionCall(client, dataQueryResult, numberOfResults++, PopulateRequestBody(_config, dataQueryResult));
             }
@@ -100,10 +102,10 @@ namespace APITestingRunner
 
         public static string PopulateRequestBody(Config config, DataQueryResult dataQueryResult)
         {
-            if (config is null) throw new ArgumentNullException(nameof(config));
-            if (dataQueryResult is null) throw new ArgumentNullException(nameof(dataQueryResult));
+			_ = config ?? throw new ArgumentNullException(nameof(config));
+            _ = dataQueryResult ?? throw new ArgumentNullException(nameof(dataQueryResult));
 
-            return ReplaceValueWithDataSource(config.RequestBody, dataQueryResult);
+            return ReplaceValueWithDataSource(config.RequestBody!, dataQueryResult);
         }
 
         public static string ReplaceValueWithDataSource(string stringToUpdate, DataQueryResult dataQueryResult)
@@ -171,7 +173,7 @@ namespace APITestingRunner
             _ = _config ?? throw new ArgumentNullException(nameof(_config));
 
             HttpResponseMessage? response = null;
-            string onScreenMessage = string.Empty;
+            var onScreenMessage = string.Empty;
 
             var pathAndQuery = string.Empty;
             try
@@ -267,10 +269,10 @@ namespace APITestingRunner
                     });
 
                     onScreenMessage = GenerateResponseMessage(_config.RequestType, pathAndQuery, response);
-                    string content = await response.Content.ReadAsStringAsync();
+                    var content = await response.Content.ReadAsStringAsync();
                     var fileName = string.Empty;
                     var responseHeaders = response.Headers.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString() ?? string.Empty)).ToList();
-                    ProcessingFileResult result = null;
+                    ProcessingFileResult result = null!;
                     switch (_config.ConfigMode)
                     {
                         case TesterConfigMode.Run:
@@ -394,7 +396,7 @@ namespace APITestingRunner
 
             _ = $"{apiCallResult.statusCode} - {apiCallResult.responseContent}";
 
-            ComparissonStatus fileCompareStatus = ComparissonStatus.NewFile;
+            var fileCompareStatus = ComparissonStatus.NewFile;
             var result = new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
 
             if (_config.ConfigMode == TesterConfigMode.Capture || _config.ConfigMode == TesterConfigMode.CaptureAndCompare)
@@ -441,7 +443,7 @@ namespace APITestingRunner
             _ = _config ?? throw new ArgumentNullException(nameof(_config));
             try
             {
-                string resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
+                var resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
                 if (!Directory.Exists(resultsDirectory))
                 {
                     _ = Directory.CreateDirectory(resultsDirectory);
@@ -452,7 +454,7 @@ namespace APITestingRunner
                 var fileOperations = new FileOperations();
 
                 var filePath = Path.Combine(resultsDirectory, fileName);
-                string apiResult = JsonSerializer.Serialize(apiCallResult);
+                var apiResult = JsonSerializer.Serialize(apiCallResult);
 
                 if (fileOperations.ValidateIfFileExists(filePath))
                 {
@@ -484,8 +486,8 @@ namespace APITestingRunner
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
-            string filePrefix = "request";
-            string fileSuffix = ".json";
+            var filePrefix = "request";
+            var fileSuffix = ".json";
 
             if (string.IsNullOrWhiteSpace(resultFileNamePattern))
             {
@@ -493,9 +495,7 @@ namespace APITestingRunner
             }
             else
             {
-
                 //we have value lets replace it
-
                 foreach (var resultItem in item.Results)
                 {
                     resultFileNamePattern = resultFileNamePattern.Replace($"{{{resultItem.Key}}}", resultItem.Value);
@@ -508,7 +508,7 @@ namespace APITestingRunner
         internal async Task<TestRunner> PrintResultsSummary()
         {
             Console.WriteLine("==========Status==========");
-            foreach (TestResultStatus item in _resultsStats)
+            foreach (var item in _resultsStats)
             {
                 Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
             }
@@ -516,7 +516,7 @@ namespace APITestingRunner
             if (_errors.Count > 0)
             {
                 Console.WriteLine("==========Errors==========");
-                foreach (string error in _errors)
+                foreach (var error in _errors)
                 {
                     Console.WriteLine(error);
                 }
@@ -526,44 +526,29 @@ namespace APITestingRunner
             return this;
         }
 
-        private async Task MakeApiCorCollectionCall(HttpClient client, DataQueryResult item)
-        {
-            _logger.LogInformation($"API base url: {client.BaseAddress}");
-            //string? url = string.Empty;
-            //try
-            //{
-            //    url = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, item);
-            //    if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
-            //    {
-            //        compareUrl = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.CompareUrlPath, _config, item);
-            //    }
-            //}
-            //catch (Exception)
-            //{
-            //    _errors.Add($"Error has occurred while composing an url: {url}");
-            //    return;
-            //}
+		
+        //private async Task MakeApiCorCollectionCall(HttpClient client, DataQueryResult item)
+        //{
+        //    _logger.LogInformation($"API base url: {client.BaseAddress}");
+        //    //string? url = string.Empty;
+        //    //try
+        //    //{
+        //    //    url = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.UrlPath, _config, item);
+        //    //    if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
+        //    //    {
+        //    //        compareUrl = new DataRequestConstructor().ComposeUrlAddressForRequest(_config.CompareUrlPath, _config, item);
+        //    //    }
+        //    //}
+        //    //catch (Exception)
+        //    //{
+        //    //    _errors.Add($"Error has occurred while composing an url: {url}");
+        //    //    return;
+        //    //}
 
-            //await MakeApiForCollectionCall(client, url, item);
-
-
-            return;
-        }
-    }
-    public class DataComparrison
-    {
+        //    //await MakeApiForCollectionCall(client, url, item);
 
 
-        public static ComparissonStatus CompareAPiResults(ApiCallResult apiCallResult, ApiCallResult fileSourceResult)
-        {
-            var status = ComparissonStatus.Different;
-
-            if (apiCallResult.statusCode == fileSourceResult.statusCode)
-                if (apiCallResult.IsSuccessStatusCode == fileSourceResult.IsSuccessStatusCode)
-                    if (apiCallResult.responseContent == fileSourceResult.responseContent)
-                        status = ComparissonStatus.Matching;
-
-            return status;
-        }
+        //    return;
+        //}
     }
 }

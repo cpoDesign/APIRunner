@@ -11,12 +11,13 @@ public class DirectoryServices
 
         get
         {
+			//TODO: Remove and correct
 #pragma warning disable SYSLIB0012 // Type or member is obsolete
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase!;
+            var codeBase = Assembly.GetExecutingAssembly().CodeBase!;
 #pragma warning restore SYSLIB0012 // Type or member is obsolete
 
             UriBuilder uri = new(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
+            var path = Uri.UnescapeDataString(uri.Path);
             return Path.GetDirectoryName(path)!;
         }
     }

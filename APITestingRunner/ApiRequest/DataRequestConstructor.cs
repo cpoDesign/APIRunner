@@ -23,15 +23,14 @@ namespace APITestingRunner.ApiRequest
                 _relativeUrl = urlPath;
             }
 
-
             if (_config.UrlParam == null || _config.UrlParam.Count() == 0)
             {
                 return this;
             }
 
-            bool isFirst = true;
+            var isFirst = true;
 
-            foreach (Param item in _config.UrlParam)
+            foreach (var item in _config.UrlParam)
             {
                 if (isFirst)
                 {
@@ -49,10 +48,8 @@ namespace APITestingRunner.ApiRequest
                     if (_config.DBFields.Any(x => x.value == item.value) && dbData != null)
                     {
                         //replace value from dbData object
-                        KeyValuePair<string, string> dbResultFound = dbData.Results.FirstOrDefault(x => x.Key == item.value);
-
+                        var dbResultFound = dbData.Results.FirstOrDefault(x => x.Key == item.value);
                         urlPath += $"{dbResultFound.Value}";
-
                     }
                     else
                     {
