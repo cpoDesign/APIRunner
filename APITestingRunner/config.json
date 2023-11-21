@@ -1,7 +1,7 @@
 {
-  "UrlBase": "https://localhost:7055",
+  "UrlBase": "https://integration.christies.com/lotdetails_webapi/api",
   "CompareUrlBase": "",
-  "UrlPath": "/get/{bindingId}",
+  "UrlPath": "/lots/GetLotDetails?languageid={bindingLanguageId}&objectid={bindingObjectId}&apikey=708878A1-95DB-4DC2-8FBD-1E8A1DCE703C&saleroomcode=&geolocation=US",
   "CompareUrlPath": "",
   "UrlParam": null,
   "HeaderParam": [
@@ -14,13 +14,17 @@
   "RequestType": 1,
   "ConfigMode": 3,
   "ResultsStoreOption": 2,
-  "OutputLocation": "C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner\\bin\\Release\\net7.0",
-  "DBConnectionString": "Server=127.0.0.1; Database=testdb; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True",
-  "DBQuery": "select id as bindingId from dbo.sampleTable where id = 1",
+  "OutputLocation": "C:\\code\\APITestingRunner\\APITestingRunner\\bin\\Debug\\net7.0",
+  "DBConnectionString": "Server=10.100.27.63; Database=lotsonline; User Id=1989$irREGULar!6thAnd1st; Password=horaTIO=FALLon<2001>verv!;TrustServerCertificate=True",
+  "DBQuery": "SELECT Objectid as bindingObjectId, 1 as bindingLanguageId FROM lotsonline.dbo.tblLotDescriptionCommon where Objectid = 6430444",
   "DBFields": [
     {
-      "Name": "bindingId",
-      "value": "bindingId"
+      "Name": "bindingObjectId",
+      "value": "bindingObjectId"
+    },
+    {
+      "Name": "bindingLanguageId",
+      "value": "bindingLanguageId"
     }
   ],
   "ResultFileNamePattern": null

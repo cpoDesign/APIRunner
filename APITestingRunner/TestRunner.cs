@@ -89,11 +89,9 @@ namespace APITestingRunner
 
         private async Task MakeApiCall(HttpClient client)
         {
-
             var numberOfResults = 0;
             foreach (DataQueryResult dataQueryResult in await GetDataToProcessAsync())
             {
-
                 await MakeApiForCollectionCall(client, dataQueryResult, numberOfResults++, PopulateRequestBody(_config, dataQueryResult));
             }
 
@@ -200,12 +198,19 @@ namespace APITestingRunner
                 return;
             }
 
+			try
+			{
+				client.BaseAddress = new Uri(_config.UrlBase);
+			}catch (Exception)
+			{
+				_errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
+			}
+
             // update variables from url directly on url
             pathAndQuery = TestRunner.ReplaceValueWithDataSource(pathAndQuery, item);
 
             try
             {
-
                 switch (_config.RequestType)
                 {
                     case RequestType.GET:
