@@ -1,42 +1,17 @@
 # Promethean API Test Runner
 
 TODO:
-outstanding items
-
 command line options
 
-1  wiremock add validation for a api call with setup for post with data so it matches a result
 1. Create a status report
     1. Add analysis on how many ware successfull and how many not
 1. 1. Compatibility 
 we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
-1. Add comparisson option to replace strings
 
-```
-    "CompareReplacements": [
-        {
-            "From": "htts://integration.christies.com",
-            "To": "",
-            "StoreInFile": false
-        },
-        {
-            "From": "htts://staging.christies.com",
-            "To": "",
-            "StoreInFile": false
-        },
-        {
-            "From": "authetication key",
-            "To": "xxxxxx",
-            "StoreInFile": true
-        }
-    ]
-```
 2. Add total time spend running the tool
 1. 1. when run exe display basic instance
 1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
-
-
 
 
 
@@ -210,4 +185,50 @@ INSERT [dbo].[sampleTable] ([id], [name], [description]) VALUES (3, N'Name3', N'
 GO
 INSERT [dbo].[sampleTable] ([id], [name], [description]) VALUES (4, N'Name4', N'descirption 2')
 GO
+```
+
+
+## Plugins
+
+### Content Replacements
+Purpose of this option
+
+Gets applied to whole file at the a point of storing and comparing based on StoreInFile option. It requires a ResultsStoreOption to be set to Failure or All
+StoreInFile option gets processed on saving file result.
+All files gets processed when comparing the result.
+
+ | Fields        | Explanation                                              |
+ |:--            |:--                                                       |
+ | From          | String we are looking for in file                        |
+ | To            | To be replaced with another                              |
+ | StoreInFile   | True / False                                             |
+
+ Use Cases:
+
+ 1. I want to remove a domain specific part from the result so I can compare a data between environments and I know only paths are different.
+ 1. I want to remove authentication tokens.
+ 1. I want to validate a data set where I know a migration has changed in the api, so I can allow for migration to a new version by replacing substring and keep validating the same api.
+
+#### Example of configuration
+
+Add comparison option into `config.json` file.
+
+```
+    "ContentReplacements": [
+        {
+            "From": "htts://integration.christies.com",
+            "To": "",
+            "StoreInFile": false
+        },
+        {
+            "From": "htts://staging.christies.com",
+            "To": "",
+            "StoreInFile": false
+        },
+        {
+            "From": "authetication key",
+            "To": "xxxxxx",
+            "StoreInFile": true
+        }
+    ]
 ```
