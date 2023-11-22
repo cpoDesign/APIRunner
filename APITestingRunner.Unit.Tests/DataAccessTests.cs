@@ -5,6 +5,7 @@ using APITestingRunner.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace APITestingRunner.Unit.Tests
@@ -88,45 +89,62 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_DataSet_withOneFieldFromDbForBinder()
 		{
-			var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			Console.WriteLine($"Assembly Filepath = {filePath}");
-			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
-
-			var data = new DataAccess(_config, new Mock<Logger>().Object);
-
-			var records = await data.FetchDataForRunnerAsync();
-
-			_ = records.Should().NotBeEmpty();
-			_ = records.Should().HaveCount(3);
-
-			_ = records.Last().Should().BeEquivalentTo(new DataQueryResult
+			try
 			{
-				RowId = 3,
-				Results = [new KeyValuePair<string, string>("sqlId", "3"),
-				]
-			});
+				var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+				_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
 
-			_ = records.Last().Results.Should().HaveCount(1);
+				var data = new DataAccess(_config, new Mock<Logger>().Object);
+
+				var records = await data.FetchDataForRunnerAsync();
+
+				_ = records.Should().NotBeEmpty();
+				_ = records.Should().HaveCount(3);
+
+				_ = records.Last().Should().BeEquivalentTo(new DataQueryResult
+				{
+					RowId = 3,
+					Results = [new KeyValuePair<string, string>("sqlId", "3"),
+					]
+				});
+
+				_ = records.Last().Results.Should().HaveCount(1);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Shouldn't be here");
+				Assert.Fail(ex.Message);
+			}
 		}
 
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_EmptyDataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
+			try
+			{
+				var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+				_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
 
-			_config.DBQuery = "select id as sqlId from dbo.sampleTable where id>5;";
-			var data = new DataAccess(_config, new Mock<Logger>().Object);
+				_config.DBQuery = "select id as sqlId from dbo.sampleTable where id>5;";
+				var data = new DataAccess(_config, new Mock<Logger>().Object);
 
-			var records = await data.FetchDataForRunnerAsync();
+				var records = await data.FetchDataForRunnerAsync();
 
-			_ = records.Should().BeEmpty();
+				_ = records.Should().BeEmpty();
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Shouldn't be here");
+				Assert.Fail(ex.Message);
+			}
 		}
 
 
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_SingleFieldDataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
+			var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
 
 			_config.DBQuery = "select id as sqlId, name as fieldName from dbo.sampleTable";
 			var data = new DataAccess(_config, new Mock<Logger>().Object);
@@ -149,7 +167,8 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_TwoFieldDataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
+			var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
 
 			_config.DBFields =
 				[

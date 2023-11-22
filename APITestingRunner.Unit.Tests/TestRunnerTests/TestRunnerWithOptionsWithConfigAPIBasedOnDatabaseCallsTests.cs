@@ -2,6 +2,7 @@
 using APITestingRunner.Configuration;
 using APITestingRunner.Database;
 using FluentAssertions;
+using System.Reflection;
 using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -114,7 +115,6 @@ namespace APITestingRunner.Unit.Tests
         [TestCategory("dbcapture")]
         public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_404_WithFailureCapture()
         {
-
             server.Given(
                WireMock.RequestBuilders.Request.Create()
                .WithPath("/WeatherForecast")

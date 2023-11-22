@@ -1,5 +1,6 @@
 ﻿
 using System.Diagnostics;
+using System.Reflection;
 
 namespace APITestingRunner.Unit.Tests
 {
@@ -8,11 +9,13 @@ namespace APITestingRunner.Unit.Tests
     /// </summary>
     public class TestBase
     {
-
-        public readonly string _dbConnectionStringForTests = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+        public string _dbConnectionStringForTests = string.Empty;
 
         internal void Initialize()
         {
+            var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+            _dbConnectionStringForTests = DatabaseHelper.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
+
             // TODO: for now update this related to your checkout location and support LUT
             Debug.WriteLine(_dbConnectionStringForTests);
         }

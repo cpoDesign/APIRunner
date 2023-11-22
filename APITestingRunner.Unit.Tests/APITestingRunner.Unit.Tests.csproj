@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="SampleDb.mdf">
+    <Content Include="SampleDb.mdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="SampleDb_log.ldf">
+    </Content>
+    <Content Include="SampleDb_log.ldf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
