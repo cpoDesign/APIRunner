@@ -259,7 +259,8 @@ namespace APITestingRunner
                         NumberOfResults = numberOfResults,
                         StatusCode = (int)response.StatusCode
                     });
-
+                    
+                if (response != null) {
                     onScreenMessage = GenerateResponseMessage(_config.RequestType, pathAndQuery, response);
                     var content = await response.Content.ReadAsStringAsync();
                     var fileName = string.Empty;
@@ -300,16 +301,14 @@ namespace APITestingRunner
                             Errors.Add("This option is currently not supported");
                             throw new NotImplementedException();
                     }
+                    
+                    PopulateResultsData(numberOfResults, response, "test");
 
                     //TODO:implement
                     ///case TesterConfigMode.APICompare:
                     //if (_config.ConfigMode == ConfigurationManager.TesterConfigMode.APICompare)
                     //{
                     //    List<string> compareList = new();
-
-                    //    if (compareClient != null)
-                    //    {
-                    //        HttpResponseMessage compareResponse = await compareClient.GetAsync(compareUrl);
 
                     //        string responseCompareContent = await response.Content.ReadAsStringAsync();
 
@@ -364,9 +363,32 @@ namespace APITestingRunner
             }
         }
 
-        public static string GenerateResponseMessage(RequestType requestType, string relativeUrl, HttpResponseMessage? response)
-        {
-            var determination = "fail";
+    public void PopulateResultsData(int numberOfResults, HttpResponseMessage? response, string url) {
+
+      if (response == null) {
+        // response was not set so something went wrong adding only an error
+        _errors.Add($"Failed to populate result for {url}");
+        return;
+      }
+
+      var existingCode = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)response.StatusCode);
+
+      if (existingCode == null) {
+        _resultsStats.Add(new TestResultStatus() {
+          NumberOfResults = numberOfResults,
+          StatusCode = (int)response.StatusCode
+        });
+      } else {
+        existingCode.NumberOfResults += numberOfResults;
+      }
+    }
+
+    public List<TestResultStatus> GetResults() {
+      return _resultsStats;
+    }
+
+    public string GenerateResponseMessage(RequestType requestType, string relativeUrl, HttpResponseMessage? response) {
+      var determination = "fail";
 
             if (response is not null)
             {
@@ -499,27 +521,22 @@ namespace APITestingRunner
             }
         }
 
-        internal async Task<TestRunner> PrintResultsSummary()
-        {
+        internal async Task<TestRunner> PrintResultsSummary() {
             Console.WriteLine("==========Status==========");
-            foreach (var item in _resultsStats)
-            {
+            foreach (TestResultStatus item in _resultsStats) {
                 Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
             }
 
-            if (Errors.Count > 0)
-            {
+            if (_errors.Count > 0) {
                 Console.WriteLine("==========Errors==========");
-                foreach (var error in Errors)
-                {
+                foreach (string error in _errors) {
                     Console.WriteLine(error);
                 }
             }
-
+            
             await Task.CompletedTask;
             return this;
         }
-
 		
         //private async Task MakeApiCorCollectionCall(HttpClient client, DataQueryResult item)
         //{
