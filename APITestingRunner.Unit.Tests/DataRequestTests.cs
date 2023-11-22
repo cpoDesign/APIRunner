@@ -24,10 +24,10 @@ namespace APITestingRunner.Unit.Tests
 					new Param("id", "sqlId")
 				],
 				HeaderParam = [
-					new Param("accept","application/json")
+					new Param("accept", "application/json")
 				],
 				RequestBody = null,
-				DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
+				DBConnectionString = DatabaseHelper.BuildLocalhostDatabaseConnection(),
 				DBQuery = "select id as sqlId from dbo.sampleTable;",
 				DBFields = [
 					new Param("sqlId", "sqlId"),

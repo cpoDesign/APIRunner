@@ -5,6 +5,7 @@ using APITestingRunner.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Reflection;
 
 namespace APITestingRunner.Unit.Tests
 {
@@ -17,33 +18,31 @@ namespace APITestingRunner.Unit.Tests
 			CompareUrlBase = string.Empty,
 			CompareUrlPath = string.Empty,
 			UrlPath = "/Data",
-			UrlParam = new List<Param>
-				{
+			UrlParam =
+				[
 					new Param("urlKey", "test"),
 					new Param("id", "sqlId")
-				},
-			HeaderParam = new List<Param> 
-				{
-					new Param("accept","application/json")
-				},
+				],
+			HeaderParam =
+				[
+					new Param("accept", "application/json")
+				],
 			RequestBody = null,
-			DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
+			DBConnectionString = DatabaseHelper.BuildLocalhostDatabaseConnection(),
 			DBQuery = "select id as sqlId from dbo.sampleTable;",
-			DBFields = new List<Param>
-				{
+			DBFields =
+				[
 					new Param("sqlId", "sqlId")
-				},
+				],
 			RequestType = RequestType.GET,
 			ResultsStoreOption = StoreResultsOption.All,
 			ConfigMode = TesterConfigMode.Run,
 			OutputLocation = DirectoryServices.AssemblyDirectory
 		};
 
-		[TestInitialize]
-		public void TestInit()
-		{
-
-		}
+		//[TestInitialize]
+		//public void TestInit()
+		//{ }
 
 		[TestMethod]
 		public void DataAccess_Tests_ConstructorShouldPass()
@@ -55,14 +54,14 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public void DataAccess_Tests_MissingConfig_ConstructorShouldThrowArgumentNullException()
 		{
-			_ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(null, null));
+			_ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(null!, null!));
 		}
 
 		//TODO: Review together - type Safety takes care of this - shouldn't be needed.
 		[TestMethod]
 		public void DataAccess_Tests_MissingLogger_ConstructorShouldThrowArgumentNullException()
 		{
-			_ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(_config, null));
+			_ = Assert.ThrowsException<ArgumentNullException>(() => new DataAccess(_config, null!));
 		}
 
 		[TestMethod]
@@ -89,7 +88,9 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_DataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+			var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			Console.WriteLine($"Assembly Filepath = {filePath}");
+			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
 
 			var data = new DataAccess(_config, new Mock<Logger>().Object);
 
@@ -101,8 +102,8 @@ namespace APITestingRunner.Unit.Tests
 			_ = records.Last().Should().BeEquivalentTo(new DataQueryResult
 			{
 				RowId = 3,
-				Results = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("sqlId", "3"),
-			}
+				Results = [new KeyValuePair<string, string>("sqlId", "3"),
+				]
 			});
 
 			_ = records.Last().Results.Should().HaveCount(1);
@@ -111,7 +112,7 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_EmptyDataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
 
 			_config.DBQuery = "select id as sqlId from dbo.sampleTable where id>5;";
 			var data = new DataAccess(_config, new Mock<Logger>().Object);
@@ -125,7 +126,7 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_SingleFieldDataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
 
 			_config.DBQuery = "select id as sqlId, name as fieldName from dbo.sampleTable";
 			var data = new DataAccess(_config, new Mock<Logger>().Object);
@@ -138,8 +139,8 @@ namespace APITestingRunner.Unit.Tests
 			_ = records.Last().Should().BeEquivalentTo(new DataQueryResult
 			{
 				RowId = 3,
-				Results = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("sqlId", "3"),
-			}
+				Results = [new KeyValuePair<string, string>("sqlId", "3"),
+				]
 			});
 
 			_ = records.Last().Results.Should().HaveCount(1);
@@ -148,13 +149,13 @@ namespace APITestingRunner.Unit.Tests
 		[TestMethod]
 		public async Task FetchDataForRunner_GetDataFromDatabase_ShouldReturn_TwoFieldDataSet_withOneFieldFromDbForBinder()
 		{
-			_config.DBConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security=True";
+			_config.DBConnectionString = DatabaseHelper.BuildFileDatabaseConnection("C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\", "SampleDb.mdf");
 
-			_config.DBFields = new List<Param>
-		  {
+			_config.DBFields =
+				[
 					new Param("sqlId", "sqlId"),
 					new Param("fieldName", "fieldName")
-				};
+				];
 
 			_config.DBQuery = "select id as sqlId, name as fieldName from dbo.sampleTable";
 			var data = new DataAccess(_config, new Mock<Logger>().Object);
