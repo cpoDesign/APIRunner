@@ -1,7 +1,8 @@
-﻿using APITestingRunner.ApiRequest;
+using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using WireMock.Matchers.Request;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -89,77 +90,79 @@ namespace APITestingRunner.Unit.Tests
 
         // TODO: Fix this text wiremock does not recognise the request when validating against a body
         //[TestMethod]
-        //[TestCategory("SimpleAPICallBasedOnConfig")]
-        //[DataRow(RequestType.POST)]
-        //public async Task Request_Post_With_Static_BodyFromConfig(RequestType requestType) {
-        //    _ = server ?? throw new ArgumentNullException(nameof(server));
-        //    var data = JsonConvert.SerializeObject(
-        //        new {
-        //            Name = "Test Name",
-        //            Age = 5
-        //        });
-        //    //var dummDataToPost = new StringContent(data, Encoding.UTF8, MediaTypeNames.Application.Json);
-        //    server.Given(
-        //         WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast")
-        //         .WithBody("Test")
-        //         .UsingPost()
-        //   )
-        //   .RespondWith(
-        //       Response.Create()
-        //           .WithStatusCode(200)
-        //           .WithHeader("Content-Type", "application/json")
-        //           .WithBody(@"{ ""msg"": ""Hello I'm a little bit slow!"" }")
-        //   );
+        
+        
+    // TODO: Fix this text wiremock does not recognise the request when validating against a body
+    [TestMethod]
+    [TestCategory("SimpleAPICallBasedOnConfig")]
+    [DataRow(RequestType.POST)]
+    public async Task Request_Post_With_Static_BodyFromConfig(RequestType requestType) {
+      _ = server ?? throw new ArgumentNullException(nameof(server));
+      var data = JsonConvert.SerializeObject(
+          new {
+            Name = "Test Name",
+            Age = 5
+          });
+
+      server.Given(
+           WireMock.RequestBuilders.Request.Create()
+           .WithPath("/WeatherForecast")
+           .WithBody(data, matchBehaviour: WireMock.Matchers.MatchBehaviour.AcceptOnMatch)
+           .WithHeader("accept", "application/json")
+           .UsingPost()
+     )
+     .RespondWith(
+         Response.Create()
+             .WithStatusCode(200)
+             .WithHeader("Content-Type", "application/json")
+             .WithBody(@"{ ""msg"": ""Hello I'm a little bit slow!"" }")
+     );
 
 
-        //    Config config = new() {
-        //        UrlBase = "http://localhost:7055",
-        //        CompareUrlBase = string.Empty,
-        //        CompareUrlPath = string.Empty,
-        //        UrlPath = "/WeatherForecast",
-        //        UrlParam = null,
-        //        RequestBody = data, //"{\"Name\":\"Test Name\",\"Age\":5}",
-        //        HeaderParam = new List<Param> {
-        //                        new Param("accept","application/json")
-        //                      },
-        //        DBConnectionString = null,
-        //        DBQuery = null,
-        //        DBFields = null,
-        //        RequestType = requestType,
-        //        ResultsStoreOption = StoreResultsOption.None,
-        //        ConfigMode = TesterConfigMode.Run,
-        //        OutputLocation = DirectoryServices.AssemblyDirectory,
-        //    };
+      Config config = new() {
+        UrlBase = "http://localhost:7055",
+        CompareUrlBase = string.Empty,
+        CompareUrlPath = string.Empty,
+        UrlPath = "/WeatherForecast",
+        UrlParam = null,
+        RequestBody = data, //"{\"Name\":\"Test Name\",\"Age\":5}",
+        HeaderParam = new List<Param> {
+                            new Param("accept","application/json")
+                          },
+        DBConnectionString = null,
+        DBQuery = null,
+        DBFields = null,
+        RequestType = requestType,
+        ResultsStoreOption = StoreResultsOption.None,
+        ConfigMode = TesterConfigMode.Run,
+        OutputLocation = DirectoryServices.AssemblyDirectory,
+      };
 
-        //    var logger = new TestLogger();
+      var logger = new TestLogger();
 
-        //    var testRunner = await new ApiTesterRunner()
-        //                        .AddLogger(logger)
-        //                        .RunTests(config);
+      var testRunner = await new ApiTesterRunner(logger)
+                          .RunTests(config);
 
-        //    _ = testRunner.Errors.Should().BeEmpty();
+      _ = testRunner.Errors.Should().BeEmpty();
 
-        //    _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{requestType} /WeatherForecast 200 success"));
-        //}
+      _ = logger.Messages.Should().ContainEquivalentOf(new Tuple<LogLevel, string>(LogLevel.Information, $"{requestType} /WeatherForecast 200 success"));
+    }
 
-        private IRequestMatcher SetupMockForARequestType(RequestType request)
-        {
-            switch (request)
-            {
-                case RequestType.GET:
-                    return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet();
-                case RequestType.POST:
-                    return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingPost();
-                case RequestType.PUT:
-                    return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingPut();
-                case RequestType.PATCH:
-                    return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingPatch();
-                case RequestType.DELETE:
-                    return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingDelete();
+    private IRequestMatcher SetupMockForARequestType(RequestType request) {
+      switch (request) {
+        case RequestType.GET:
+          return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet();
+        case RequestType.POST:
+          return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingPost();
+        case RequestType.PUT:
+          return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingPut();
+        case RequestType.PATCH:
+          return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingPatch();
+        case RequestType.DELETE:
+          return WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingDelete();
 
-                default:
-                    throw new NotImplementedException();
-            }
-        }
+        default:
+          throw new NotImplementedException();
+      }
     }
 }
