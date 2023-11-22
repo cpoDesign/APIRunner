@@ -12,6 +12,31 @@ command line options
 1. 1. Compatibility 
 we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
+TODO
+Add comparisson option to replace strings
+
+```
+    "CompareReplacements": [
+        {
+            "From": "htts://integration.christies.com",
+            "To": "",
+            "StoreInFile": false
+        },
+        {
+            "From": "htts://staging.christies.com",
+            "To": "",
+            "StoreInFile": false
+        },
+        {
+            "From": "authetication key",
+            "To": "xxxxxx",
+            "StoreInFile": true
+        }
+    ]
+```
+
+
+
 
 
 ## Purpose of the tool
