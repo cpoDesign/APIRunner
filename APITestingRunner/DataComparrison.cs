@@ -4,7 +4,7 @@ using APITestingRunner.ApiRequest;
 
 namespace APITestingRunner
 {
-	public class DataComparrison
+    public class DataComparrison
     {
         public static ComparissonStatus CompareAPiResults(ApiCallResult apiCallResult, ApiCallResult fileSourceResult)
         {
@@ -13,11 +13,11 @@ namespace APITestingRunner
             if ((apiCallResult.StatusCode == fileSourceResult.StatusCode)
                 && (apiCallResult.IsSuccessStatusCode == fileSourceResult.IsSuccessStatusCode)
                     && (apiCallResult.ResponseContent == fileSourceResult.ResponseContent))
-			{
-				status = ComparissonStatus.Matching;
-			}
+            {
+                status = ComparissonStatus.Matching;
+            }
 
-			return status;
+            return status;
         }
     }
 }
