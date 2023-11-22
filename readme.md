@@ -2,16 +2,10 @@
 
 TODO:
 
-1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
-1. Introduce -> 
-
-
 command line options
-TODO
 
 
-TODO
-Add comparisson option to replace strings
+1. Add comparisson option to replace strings
 
 ```
     "CompareReplacements": [
@@ -32,6 +26,9 @@ Add comparisson option to replace strings
         }
     ]
 ```
+2. Add total time spend running the tool
+1. 1. when run exe display basic instance
+1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
 
 
