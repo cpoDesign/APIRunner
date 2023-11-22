@@ -4,6 +4,7 @@ using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
 using APITestingRunner.Database;
 using APITestingRunner.IoOperations;
+using APITestingRunner.Plugins;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Net.Mime;
@@ -12,39 +13,38 @@ using System.Text.Json;
 
 namespace APITestingRunner
 {
-	/// <summary>
-	/// Instance of test runner executing the tests.
-	/// </summary>
-	/// <param name="logger">Instance of a logger.</param>
-	/// <exception cref="ArgumentNullException">Can throw when logger is not provided.</exception>
-	public class TestRunner(ILogger logger)
-	{
-        private Config? _config;
-		private readonly List<TestResultStatus> _resultsStats = [];
-		private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    /// <summary>
+    /// Instance of test runner executing the tests.
+    /// </summary>
+    /// <param name="logger">Instance of a logger.</param>
+    /// <exception cref="ArgumentNullException">Can throw when logger is not provided.</exception>
+    public class TestRunner(ILogger logger)
+    {
+        private IConfig? _config;
+        private readonly List<TestResultStatus> _resultsStats = [];
+        private readonly List<IPlugin> plugins = [];
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-		public List<string> Errors { get; } = [];
+        public List<string> Errors { get; } = [];
 
-		internal async Task ApplyConfig(Config? configSettings)
-		{
+        internal void ApplyConfig(Config? configSettings)
+        {
             if (configSettings == null)
             {
                 Errors.Add("Failed to load configuration");
             }
-            else
-            {
-                _config = configSettings;
-            }
 
-            await Task.CompletedTask;
+            _config = configSettings;
         }
 
         internal async Task<TestRunner> RunTestsAsync()
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			// create a request to the api
-			var handler = new HttpClientHandler();
+            InstantiatePlugins();
+
+            // create a request to the api
+            var handler = new HttpClientHandler();
 
             handler.ServerCertificateCustomValidationCallback +=
                             (sender, certificate, chain, errors) =>
@@ -65,11 +65,21 @@ namespace APITestingRunner
             return this;
         }
 
+        private void InstantiatePlugins()
+        {
+            if (_config == null) throw new NullReferenceException("Config should always be populated");
+
+            foreach (var plugin in this.plugins)
+            {
+                plugin.ApplyConfig(ref _config, _logger);
+            }
+        }
+
         private void PopulateClientHeadersFromConfig(HttpClient client, List<Param> headerParam)
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			if (headerParam != null && headerParam.Count > 0)
+            if (headerParam != null && headerParam.Count > 0)
             {
                 foreach (var item in _config.HeaderParam)
                 {
@@ -80,9 +90,9 @@ namespace APITestingRunner
 
         private async Task MakeApiCall(HttpClient client)
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			var numberOfResults = 0;
+            var numberOfResults = 0;
             foreach (var dataQueryResult in await GetDataToProcessAsync())
             {
                 await MakeApiForCollectionCall(client, dataQueryResult, numberOfResults++, PopulateRequestBody(_config, dataQueryResult));
@@ -91,9 +101,9 @@ namespace APITestingRunner
             return;
         }
 
-        public static string PopulateRequestBody(Config config, DataQueryResult dataQueryResult)
+        public static string PopulateRequestBody(IConfig config, DataQueryResult dataQueryResult)
         {
-			_ = config ?? throw new ArgumentNullException(nameof(config));
+            _ = config ?? throw new ArgumentNullException(nameof(config));
             _ = dataQueryResult ?? throw new ArgumentNullException(nameof(dataQueryResult));
 
             return ReplaceValueWithDataSource(config.RequestBody!, dataQueryResult);
@@ -129,13 +139,13 @@ namespace APITestingRunner
         /// <exception cref="ArgumentNullException"></exception>
         public async Task<IEnumerable<DataQueryResult>> GetDataToProcessAsync()
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			_logger.LogInformation("Validating database based data source start");
+            _logger.LogInformation("Validating database based data source start");
+
             /// return data source
             if (!string.IsNullOrWhiteSpace(_config.DBConnectionString))
             {
-
                 _logger.LogInformation("Found database connection string");
 
                 if (!string.IsNullOrWhiteSpace(_config.DBQuery) && _config?.DBFields?.Count > 0)
@@ -161,9 +171,9 @@ namespace APITestingRunner
         /// <exception cref="NotImplementedException"></exception>
         private async Task MakeApiForCollectionCall(HttpClient client, DataQueryResult item, int numberOfResults, string requestBody = "")
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			HttpResponseMessage? response = null;
+            HttpResponseMessage? response = null;
             var onScreenMessage = string.Empty;
 
             var pathAndQuery = string.Empty;
@@ -191,14 +201,14 @@ namespace APITestingRunner
                 return;
             }
 
-   //         //TODO Pav to fix: restore this functionality
-			//try
-			//{
-			//	client.BaseAddress = new Uri(_config.UrlBase);
-			//}catch (Exception)
-			//{
-			//	Errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
-			//}
+            //         //TODO Pav to fix: restore this functionality
+            //try
+            //{
+            //	client.BaseAddress = new Uri(_config.UrlBase);
+            //}catch (Exception)
+            //{
+            //	Errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
+            //}
 
             // update variables from url directly on url
             pathAndQuery = TestRunner.ReplaceValueWithDataSource(pathAndQuery, item);
@@ -259,7 +269,7 @@ namespace APITestingRunner
                         NumberOfResults = numberOfResults,
                         StatusCode = (int)response.StatusCode
                     });
-                    
+
                     onScreenMessage = GenerateResponseMessage(_config.RequestType, pathAndQuery, response);
                     var content = await response.Content.ReadAsStringAsync();
                     var fileName = string.Empty;
@@ -300,7 +310,7 @@ namespace APITestingRunner
                             Errors.Add("This option is currently not supported");
                             throw new NotImplementedException();
                     }
-                    
+
                     PopulateResultsData(numberOfResults, response, "test");
 
                     //TODO:implement
@@ -362,32 +372,39 @@ namespace APITestingRunner
             }
         }
 
-    public void PopulateResultsData(int numberOfResults, HttpResponseMessage? response, string url) {
+        public void PopulateResultsData(int numberOfResults, HttpResponseMessage? response, string url)
+        {
+            if (response == null)
+            {
+                // response was not set so something went wrong adding only an error
+                Errors.Add($"Failed to populate result for {url}");
+                return;
+            }
 
-      if (response == null) {
-        // response was not set so something went wrong adding only an error
-        Errors.Add($"Failed to populate result for {url}");
-        return;
-      }
+            var existingCode = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)response.StatusCode);
 
-      var existingCode = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)response.StatusCode);
+            if (existingCode == null)
+            {
+                _resultsStats.Add(new TestResultStatus()
+                {
+                    NumberOfResults = numberOfResults,
+                    StatusCode = (int)response.StatusCode
+                });
+            }
+            else
+            {
+                existingCode.NumberOfResults += numberOfResults;
+            }
+        }
 
-      if (existingCode == null) {
-        _resultsStats.Add(new TestResultStatus() {
-          NumberOfResults = numberOfResults,
-          StatusCode = (int)response.StatusCode
-        });
-      } else {
-        existingCode.NumberOfResults += numberOfResults;
-      }
-    }
+        public List<TestResultStatus> GetResults()
+        {
+            return _resultsStats;
+        }
 
-    public List<TestResultStatus> GetResults() {
-      return _resultsStats;
-    }
-
-    public string GenerateResponseMessage(RequestType requestType, string relativeUrl, HttpResponseMessage? response) {
-      var determination = "fail";
+        public string GenerateResponseMessage(RequestType requestType, string relativeUrl, HttpResponseMessage? response)
+        {
+            var determination = "fail";
 
             if (response is not null)
             {
@@ -405,10 +422,10 @@ namespace APITestingRunner
 
         private async Task<ProcessingFileResult> ProcessResultCaptureAndCompareIfRequested(ApiCallResult apiCallResult)
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			//TODO: Review what this is for?
-			_ = $"{apiCallResult.StatusCode} - {apiCallResult.ResponseContent}";
+            //TODO: Review what this is for?
+            _ = $"{apiCallResult.StatusCode} - {apiCallResult.ResponseContent}";
 
             var fileCompareStatus = ComparissonStatus.NewFile;
             var result = new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
@@ -454,9 +471,9 @@ namespace APITestingRunner
         /// <returns>Boolean result checking if file already exists.</returns>
         private async Task<ComparissonStatus> LogIntoFileAsync(string logLocation, ApiCallResult apiCallResult)
         {
-			ArgumentNullException.ThrowIfNull(_config);
+            ArgumentNullException.ThrowIfNull(_config);
 
-			try
+            try
             {
                 var resultsDirectory = Path.Combine(logLocation, TestConstants.TestOutputDirectory);
                 if (!Directory.Exists(resultsDirectory))
@@ -471,9 +488,27 @@ namespace APITestingRunner
                 var filePath = Path.Combine(resultsDirectory, fileName);
                 var apiResult = JsonSerializer.Serialize(apiCallResult);
 
+                if (plugins != null)
+                {
+                    foreach (var plugin in plugins)
+                    {
+                        apiResult = plugin.ProcessBeforeSave(apiResult);
+                    }
+                }
+
                 if (fileOperations.ValidateIfFileExists(filePath))
                 {
-                    var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(FileOperations.GetFileData(filePath));
+                    var compareFileData = FileOperations.GetFileData(filePath);
+
+                    if (plugins != null)
+                    {
+                        foreach (var plugin in plugins)
+                        {
+                            compareFileData = plugin.ProcessValidation(compareFileData);
+                        }
+                    }
+
+                    var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(compareFileData);
 
                     if (fileSourceResult is not null)
                     {
@@ -499,9 +534,9 @@ namespace APITestingRunner
 
         public static string GenerateResultName(DataQueryResult? item, string? resultFileNamePattern = null)
         {
-			ArgumentNullException.ThrowIfNull(item);
+            ArgumentNullException.ThrowIfNull(item);
 
-			var filePrefix = "request";
+            var filePrefix = "request";
             var fileSuffix = ".json";
 
             if (string.IsNullOrWhiteSpace(resultFileNamePattern))
@@ -520,23 +555,41 @@ namespace APITestingRunner
             }
         }
 
-        internal async Task<TestRunner> PrintResultsSummary() {
+        internal async Task<TestRunner> PrintResultsSummary()
+        {
             Console.WriteLine("==========Status==========");
-            foreach (TestResultStatus item in _resultsStats) {
+            foreach (var item in _resultsStats)
+            {
                 Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
             }
 
-            if (Errors.Count > 0) {
+            if (Errors.Count > 0)
+            {
                 Console.WriteLine("==========Errors==========");
-                foreach (string error in Errors) {
+                foreach (var error in Errors)
+                {
                     Console.WriteLine(error);
                 }
             }
-            
+
             await Task.CompletedTask;
             return this;
         }
-		
+
+        /// <summary>
+        /// Introducing plugins into the runner. 
+        /// </summary>
+        /// <param name="availablePlugins">A collection of available plugins</param>
+        internal void RegisterPlugin(IEnumerable<IPlugin> availablePlugins)
+        {
+            if (availablePlugins == null) return;
+
+            foreach (var plugin in availablePlugins)
+            {
+                this.plugins.Add(plugin);
+            }
+        }
+
         //private async Task MakeApiCorCollectionCall(HttpClient client, DataQueryResult item)
         //{
         //    _logger.LogInformation($"API base url: {client.BaseAddress}");

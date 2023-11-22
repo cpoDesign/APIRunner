@@ -7,20 +7,28 @@
 //Console.ReadLine();
 
 using APITestingRunner.Configuration;
+using APITestingRunner.Plugins;
 using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner
 {
-	public class ApiTesterRunner(ILogger logger)
-	{
+    public class ApiTesterRunner(ILogger logger)
+    {
         private readonly ILogger? _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-		public async Task CreateConfig(string pathConfigJson, Config config)
+
+        private readonly IList<IPlugin> PluginList = new List<IPlugin>(){
+                                new ContentReplacements()
+                             };
+
+
+        public async Task CreateConfig(string pathConfigJson, Config config)
         {
             _ = _logger ?? throw new ArgumentNullException(nameof(_logger));
 
-			_logger.LogInformation($"creating config on path: {pathConfigJson}");
-            await ConfigurationManager.CreateConfig(pathConfigJson, config);
+            _logger.LogInformation($"creating config on path: {pathConfigJson}");
+            await ConfigurationManager
+                 .CreateConfig(pathConfigJson, config);
             _logger.LogInformation($"creating created");
             return;
 
@@ -33,11 +41,12 @@ namespace APITestingRunner
 
             var configSettings = await ConfigurationManager.GetConfigAsync(pathConfigJson);
             TestRunner testRunner = new(_logger);
-            await testRunner.ApplyConfig(configSettings);
+            testRunner.ApplyConfig(configSettings);
 
             try
             {
-                testRunner = await testRunner.RunTestsAsync();
+                testRunner = await testRunner
+                    .RunTestsAsync();
             }
             catch (Exception ex)
             {
@@ -53,8 +62,8 @@ namespace APITestingRunner
             _ = _logger ?? throw new ArgumentNullException("_logger");
 
             TestRunner testRunner = new(_logger);
-            await testRunner.ApplyConfig(config);
-
+            testRunner.ApplyConfig(config);
+            testRunner.RegisterPlugin(this.PluginList);
             return await testRunner.RunTestsAsync();
 
         }

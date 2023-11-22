@@ -17,7 +17,7 @@ namespace APITestingRunner.ApiRequest
         /// <param name="_config">Instance of configuration parameters</param>
         /// <param name="dbData">Data from database used to merge to create a data driven url</param>
         /// <returns>Instance of object</returns>
-        public DataRequestConstructor ComposeUrlAddressForRequest(string urlPath, Config _config, DataQueryResult? dbData)
+        public DataRequestConstructor ComposeUrlAddressForRequest(string urlPath, IConfig _config, DataQueryResult? dbData)
         {
             if (!string.IsNullOrWhiteSpace(urlPath))
             {

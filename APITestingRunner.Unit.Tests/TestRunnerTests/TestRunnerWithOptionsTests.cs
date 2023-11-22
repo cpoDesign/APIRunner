@@ -8,9 +8,8 @@ using WireMock.Server;
 
 namespace APITestingRunner.Unit.Tests
 {
-
-	[TestClass]
-    public partial class TestRunnerWithOptionsWithConfigAPICallsTests
+    [TestClass]
+    public class TestRunnerWithOptionsWithConfigAPICallsTests
     {
         private WireMockServer? server;
 
@@ -69,9 +68,9 @@ namespace APITestingRunner.Unit.Tests
                 UrlPath = "/WeatherForecast",
                 UrlParam = null,
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                                 new Param("accept","application/json")
-                              },
+                              ],
                 DBConnectionString = null,
                 DBQuery = null,
                 DBFields = null,
@@ -116,9 +115,9 @@ namespace APITestingRunner.Unit.Tests
                 UrlPath = "/WeatherForecast",
                 UrlParam = null,
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                                 new Param("accept","application/json")
-                              },
+                              ],
                 DBConnectionString = null,
                 DBQuery = null,
                 DBFields = null,
@@ -173,9 +172,9 @@ namespace APITestingRunner.Unit.Tests
                 UrlPath = "/WeatherForecast",
                 UrlParam = null,
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                                 new Param("accept","application/json")
-                              },
+                              ],
                 DBConnectionString = null,
                 DBQuery = null,
                 DBFields = null,
@@ -235,9 +234,9 @@ namespace APITestingRunner.Unit.Tests
                 UrlPath = "/WeatherForecast",
                 UrlParam = null,
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                                 new Param("accept","application/json")
-                              },
+                              ],
                 DBConnectionString = null,
                 DBQuery = null,
                 DBFields = null,
@@ -298,9 +297,9 @@ namespace APITestingRunner.Unit.Tests
                 UrlPath = "/WeatherForecast",
                 UrlParam = null,
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                                 new Param("accept","application/json")
-                              },
+                              ],
                 DBConnectionString = null,
                 DBQuery = null,
                 DBFields = null,
