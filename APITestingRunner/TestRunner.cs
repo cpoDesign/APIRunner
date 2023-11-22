@@ -191,13 +191,14 @@ namespace APITestingRunner
                 return;
             }
 
-			try
-			{
-				client.BaseAddress = new Uri(_config.UrlBase);
-			}catch (Exception)
-			{
-				Errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
-			}
+   //         //TODO Pav to fix: restore this functionality
+			//try
+			//{
+			//	client.BaseAddress = new Uri(_config.UrlBase);
+			//}catch (Exception)
+			//{
+			//	Errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
+			//}
 
             // update variables from url directly on url
             pathAndQuery = TestRunner.ReplaceValueWithDataSource(pathAndQuery, item);
