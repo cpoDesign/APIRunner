@@ -1,14 +1,15 @@
-﻿using FluentAssertions;
+﻿using APITestingRunner.ApiRequest;
+using APITestingRunner.Configuration;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using WireMock.Matchers.Request;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
-using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests
 {
 
-    [TestClass]
+	[TestClass]
     public class TestDifferentRequestTypes : TestBase
     {
         private WireMockServer? server;

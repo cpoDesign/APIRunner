@@ -10,9 +10,9 @@ namespace APITestingRunner
         {
             var status = ComparissonStatus.Different;
 
-            if ((apiCallResult.statusCode == fileSourceResult.statusCode)
+            if ((apiCallResult.StatusCode == fileSourceResult.StatusCode)
                 && (apiCallResult.IsSuccessStatusCode == fileSourceResult.IsSuccessStatusCode)
-                    && (apiCallResult.responseContent == fileSourceResult.responseContent))
+                    && (apiCallResult.ResponseContent == fileSourceResult.ResponseContent))
 			{
 				status = ComparissonStatus.Matching;
 			}

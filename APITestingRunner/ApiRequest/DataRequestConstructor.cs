@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using APITestingRunner.Configuration;
 using APITestingRunner.Database;
 
 namespace APITestingRunner.ApiRequest
@@ -23,7 +24,7 @@ namespace APITestingRunner.ApiRequest
                 _relativeUrl = urlPath;
             }
 
-            if (_config.UrlParam == null || _config.UrlParam.Count() == 0)
+            if (_config.UrlParam == null || _config.UrlParam.Count == 0)
             {
                 return this;
             }
@@ -45,22 +46,22 @@ namespace APITestingRunner.ApiRequest
                 //check if item value is listed in dbfields, if yes we have mapping to value from database otherwise  just use value
                 if (_config.DBFields != null)
                 {
-                    if (_config.DBFields.Any(x => x.value == item.value) && dbData != null)
+                    if (_config.DBFields.Any(x => x.Value == item.Value) && dbData != null)
                     {
                         //replace value from dbData object
-                        var dbResultFound = dbData.Results.FirstOrDefault(x => x.Key == item.value);
+                        var dbResultFound = dbData.Results.FirstOrDefault(x => x.Key == item.Value);
                         urlPath += $"{dbResultFound.Value}";
                     }
                     else
                     {
                         // no match found in parameters 
-                        urlPath += $"{item.value}";
+                        urlPath += $"{item.Value}";
                     }
                 }
                 else
                 {
                     // no match found in parameters 
-                    urlPath += $"{item.value}";
+                    urlPath += $"{item.Value}";
                 }
             }
 

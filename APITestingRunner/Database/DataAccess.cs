@@ -1,27 +1,22 @@
-﻿using APITestingRunner.Exceptions;
+﻿using APITestingRunner.Configuration;
+using APITestingRunner.Exceptions;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner.Database
 {
-	public class DataAccess
+	public class DataAccess(Config config, ILogger logger)
 	{
-		private readonly Config _config;
-		private readonly ILogger _logger;
-
-		public DataAccess(Config config, ILogger logger)
-		{
-			_config = config ?? throw new ArgumentNullException(nameof(config));
-			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		}
+		private readonly Config _config = config ?? throw new ArgumentNullException(nameof(config));
+		private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
 		public async Task<IEnumerable<DataQueryResult>> FetchDataForRunnerAsync()
 		{
 
 			if (string.IsNullOrWhiteSpace(_config.DBConnectionString)) throw new TestRunnerConfigurationErrorsException("Failed to load connection string");
 
-			List<DataQueryResult> list = new();
+			List<DataQueryResult> list = [];
 
 			try
 			{
@@ -36,7 +31,7 @@ namespace APITestingRunner.Database
 				{
 					i++;
 
-					DataQueryResult resultItem = new() { RowId = i, Results = new List<KeyValuePair<string, string>>() };
+					DataQueryResult resultItem = new() { RowId = i, Results = [] };
 
 					var fieldsInResult = rows as IDictionary<string, object>;
 

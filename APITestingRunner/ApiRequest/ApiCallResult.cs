@@ -6,21 +6,21 @@ using System.Net;
 namespace APITestingRunner.ApiRequest
 {
 
-    /// <summary>
-    /// Container for an api call result.
-    /// </summary>
-    /// <param name="statusCode"></param>
-    /// <param name="responseContent"></param>
-    /// <param name="headers"></param>
-    /// <param name="url"></param>
-    /// <param name="item"></param>
-    /// <param name="IsSuccessStatusCode"></param>
-    /// <param name="CompareResults"></param>
-    public record ApiCallResult(HttpStatusCode statusCode,
-        string responseContent,
-        List<KeyValuePair<string, string>> headers,
-        string url,
-        DataQueryResult? item,
+	/// <summary>
+	/// Container for an api call result.
+	/// </summary>
+	/// <param name="StatusCode"></param>
+	/// <param name="ResponseContent"></param>
+	/// <param name="Headers"></param>
+	/// <param name="Url"></param>
+	/// <param name="Item"></param>
+	/// <param name="IsSuccessStatusCode"></param>
+	/// <param name="CompareResults"></param>
+	public record ApiCallResult(HttpStatusCode StatusCode,
+		string ResponseContent,
+        List<KeyValuePair<string, string>> Headers,
+        string Url,
+        DataQueryResult? Item,
         bool IsSuccessStatusCode,
         List<string>? CompareResults = null)    {
     }

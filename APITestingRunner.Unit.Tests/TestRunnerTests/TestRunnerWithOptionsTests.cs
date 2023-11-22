@@ -1,14 +1,15 @@
-﻿using APITestingRunner.Database;
+﻿using APITestingRunner.ApiRequest;
+using APITestingRunner.Configuration;
+using APITestingRunner.Database;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
-using static ConfigurationManager;
 
 namespace APITestingRunner.Unit.Tests
 {
 
-    [TestClass]
+	[TestClass]
     public partial class TestRunnerWithOptionsWithConfigAPICallsTests
     {
         private WireMockServer? server;

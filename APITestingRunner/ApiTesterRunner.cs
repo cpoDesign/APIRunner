@@ -6,27 +6,21 @@
 //Console.WriteLine(path);
 //Console.ReadLine();
 
+using APITestingRunner.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner
 {
-    public class ApiTesterRunner
-    {
-        private readonly ILogger? _logger;
+	public class ApiTesterRunner(ILogger logger)
+	{
+        private readonly ILogger? _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        public ApiTesterRunner(ILogger logger)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        public async Task CreateConfig(string pathConfigJson, Config config)
+		public async Task CreateConfig(string pathConfigJson, Config config)
         {
             _ = _logger ?? throw new ArgumentNullException(nameof(_logger));
 
-            ConfigurationManager configManager = new();
-
-            _logger.LogInformation($"creating config on path: {pathConfigJson}");
-            await configManager.CreateConfig(pathConfigJson, config);
+			_logger.LogInformation($"creating config on path: {pathConfigJson}");
+            await ConfigurationManager.CreateConfig(pathConfigJson, config);
             _logger.LogInformation($"creating created");
             return;
 
@@ -37,9 +31,7 @@ namespace APITestingRunner
 
             _ = _logger ?? throw new ArgumentNullException(nameof(_logger));
 
-            ConfigurationManager configManager = new();
-
-            var configSettings = await configManager.GetConfigAsync(pathConfigJson);
+            var configSettings = await ConfigurationManager.GetConfigAsync(pathConfigJson);
             TestRunner testRunner = new(_logger);
             await testRunner.ApplyConfig(configSettings);
 

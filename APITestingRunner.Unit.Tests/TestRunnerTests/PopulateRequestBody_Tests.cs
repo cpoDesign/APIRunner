@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using APITestingRunner.ApiRequest;
+using APITestingRunner.Configuration;
+using FluentAssertions;
 
 namespace APITestingRunner.Unit.Tests
 {

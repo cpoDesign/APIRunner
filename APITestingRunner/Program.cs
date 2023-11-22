@@ -1,4 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more informati
+using APITestingRunner.ApiRequest;
+using APITestingRunner.Configuration;
 using Microsoft.Extensions.Logging;
 using System.CommandLine;
 using System.Reflection;
@@ -18,19 +20,17 @@ namespace APITestingRunner
 			CompareUrlPath = string.Empty,
 			UrlPath = "/WeatherForecast/{bindingTown}",
 			RequestBody = null,
-			HeaderParam = new List<Param> {
-								new Param("accept","application/json")
-							  },
-			UrlParam = new List<Param>
-				{
+			HeaderParam = [new Param("accept","application/json")],
+			UrlParam =
+				[
 				  new Param("urlKey", "configKey"),
 				  new Param("id", "bindingId")
-				},
+				],
 			DBConnectionString = "set null or enter your connection string",
 			DBQuery = "select id as bindingId, town as bindingTown from table name",
-			DBFields = new List<Param>{
+			DBFields = [
 				new Param("bindingId","bindingId")
-			},
+			],
 			RequestType = RequestType.GET,
 			ResultsStoreOption = StoreResultsOption.All,
 			ConfigMode = TesterConfigMode.CaptureAndCompare,
