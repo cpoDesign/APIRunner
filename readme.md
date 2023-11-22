@@ -10,6 +10,29 @@ command line options
 TODO
 
 
+TODO
+Add comparisson option to replace strings
+
+```
+    "CompareReplacements": [
+        {
+            "From": "htts://integration.christies.com",
+            "To": "",
+            "StoreInFile": false
+        },
+        {
+            "From": "htts://staging.christies.com",
+            "To": "",
+            "StoreInFile": false
+        },
+        {
+            "From": "authetication key",
+            "To": "xxxxxx",
+            "StoreInFile": true
+        }
+    ]
+```
+
 
 
 
