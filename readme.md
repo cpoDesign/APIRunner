@@ -4,7 +4,6 @@ TODO:
 outstanding items
 
 command line options
--- generate a config
 
 1  wiremock add validation for a api call with setup for post with data so it matches a result
 1. Create a status report
@@ -12,8 +11,7 @@ command line options
 1. 1. Compatibility 
 we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
-TODO
-Add comparisson option to replace strings
+1. Add comparisson option to replace strings
 
 ```
     "CompareReplacements": [
@@ -34,6 +32,9 @@ Add comparisson option to replace strings
         }
     ]
 ```
+2. Add total time spend running the tool
+1. 1. when run exe display basic instance
+1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
 
 
