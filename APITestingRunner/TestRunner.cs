@@ -260,7 +260,6 @@ namespace APITestingRunner
                         StatusCode = (int)response.StatusCode
                     });
                     
-                if (response != null) {
                     onScreenMessage = GenerateResponseMessage(_config.RequestType, pathAndQuery, response);
                     var content = await response.Content.ReadAsStringAsync();
                     var fileName = string.Empty;
@@ -349,7 +348,7 @@ namespace APITestingRunner
                     //}
                     //else
                     //{
-                    //    _errors.Add("Failed to find configuration for compare API");
+                    //    Errors.Add("Failed to find configuration for compare API");
                     //}
                 }
             }
@@ -367,7 +366,7 @@ namespace APITestingRunner
 
       if (response == null) {
         // response was not set so something went wrong adding only an error
-        _errors.Add($"Failed to populate result for {url}");
+        Errors.Add($"Failed to populate result for {url}");
         return;
       }
 
@@ -527,9 +526,9 @@ namespace APITestingRunner
                 Console.WriteLine($"{item.StatusCode} - Count: {item.NumberOfResults}");
             }
 
-            if (_errors.Count > 0) {
+            if (Errors.Count > 0) {
                 Console.WriteLine("==========Errors==========");
-                foreach (string error in _errors) {
+                foreach (string error in Errors) {
                     Console.WriteLine(error);
                 }
             }
@@ -552,7 +551,7 @@ namespace APITestingRunner
         //    //}
         //    //catch (Exception)
         //    //{
-        //    //    _errors.Add($"Error has occurred while composing an url: {url}");
+        //    //    Errors.Add($"Error has occurred while composing an url: {url}");
         //    //    return;
         //    //}
 
