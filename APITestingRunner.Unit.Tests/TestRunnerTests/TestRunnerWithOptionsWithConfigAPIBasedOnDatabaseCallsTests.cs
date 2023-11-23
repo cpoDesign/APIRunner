@@ -7,7 +7,7 @@ using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace APITestingRunner.Unit.Tests
+namespace APITestingRunner.Unit.Tests.TestRunnerTests
 {
     [TestClass]
     public class TestRunnerWithOptionsWithConfigAPIBasedOnDatabaseCallsTests : TestBase
@@ -92,7 +92,7 @@ namespace APITestingRunner.Unit.Tests
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
-            var logger = new TestLogger();
+            TestLogger logger = new();
 
             var testRunner = await new ApiTesterRunner(logger)
                                 .RunTests(apiTesterConfig);
@@ -153,7 +153,7 @@ namespace APITestingRunner.Unit.Tests
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
-            var logger = new TestLogger();
+            TestLogger logger = new();
 
             var testRunner = await new ApiTesterRunner(logger)
                                 .RunTests(apiTesterConfig);
@@ -229,7 +229,7 @@ namespace APITestingRunner.Unit.Tests
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
-            var logger = new TestLogger();
+            TestLogger logger = new();
 
             var testRunner = await new ApiTesterRunner(logger)
                                 .RunTests(apiTesterConfig);
@@ -280,7 +280,6 @@ namespace APITestingRunner.Unit.Tests
             _ = Path.Combine(testDirectory, "request-software-3.json");
         }
 
-
         [TestMethod]
         [TestCategory("SimpleAPICallBasedOnDbSource")]
         [TestCategory("dbcapture")]
@@ -321,7 +320,7 @@ namespace APITestingRunner.Unit.Tests
                 OutputLocation = DirectoryServices.AssemblyDirectory,
             };
 
-            var logger = new TestLogger();
+            TestLogger logger = new();
 
             var testRunner = await new ApiTesterRunner(logger)
                                 .RunTests(apiTesterConfig);
@@ -335,7 +334,6 @@ namespace APITestingRunner.Unit.Tests
             _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast/1 200 success");
             _ = logger.Messages[4].Item2.Should().Contain("Total process took:");
         }
-
 
         //[TestMethod]
         //public async Task CreateConfigForSingleAPICallWithUrlParam()
@@ -377,7 +375,6 @@ namespace APITestingRunner.Unit.Tests
 
         //    string sqlCon = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\code\cpoDesign\APITestingRunner\APITestingRunner.Unit.Tests\SampleDb.mdf;Integrated Security=True";
 
-
         //    Config config = new()
         //    {
         //        UrlBase = "https://localhost:7055",
@@ -404,7 +401,6 @@ namespace APITestingRunner.Unit.Tests
         //        ConfigMode = TesterConfigMode.Run,
         //        LogLocation = DirectoryServices.AssemblyDirectory
         //    };
-
 
         //    _ = await IndividualActions.RunTests(config);
         //}
@@ -438,7 +434,6 @@ namespace APITestingRunner.Unit.Tests
         //        ConfigMode = TesterConfigMode.APICompare,
         //        LogLocation = DirectoryServices.AssemblyDirectory
         //    };
-
 
         //    await IndividualActions.RunTests(config);
         //}

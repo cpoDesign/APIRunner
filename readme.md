@@ -3,15 +3,14 @@
 TODO:
 command line options
 
-1. Create a status report
-    1. Add analysis on how many ware successful and how many not
+1. Update a status report
+    1. Add analysis on how many were successful and how many not on validation
 1. 1. Compatibility 
 we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
 
 1. 1. when run exe display basic instance
 1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
-
 
 
 ## Purpose of the tool
@@ -30,8 +29,6 @@ Supported methods
  |POST          |Yes        |
  |PATCH         |Yes        |
  |DELETE        |Yes        |
-
-
 
 
 Modes for the implementation
