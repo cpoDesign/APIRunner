@@ -13,6 +13,6 @@ namespace APITestingRunner
         /// <summary>
         /// Name of the test directory.
         /// </summary>
-        public static string TestOutputDirectory = "Results";
+        public static readonly string TestOutputDirectory = "Results";
     }
 }

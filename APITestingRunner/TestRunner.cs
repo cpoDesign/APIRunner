@@ -496,7 +496,7 @@ namespace APITestingRunner
                     }
                 }
 
-                if (fileOperations.ValidateIfFileExists(filePath))
+                if (FileOperations.ValidateIfFileExists(filePath))
                 {
                     var compareFileData = FileOperations.GetFileData(filePath);
 
@@ -512,12 +512,12 @@ namespace APITestingRunner
 
                     if (fileSourceResult is not null)
                     {
-                        status = DataComparrison.CompareAPiResults(apiCallResult, fileSourceResult);
+                        status = DataComparison.CompareAPiResults(apiCallResult, fileSourceResult);
                     }
                 }
                 else
                 {
-                    await fileOperations.WriteFile(filePath, apiResult);
+                    await FileOperations.WriteFile(filePath, apiResult);
                 }
                 return status;
             }

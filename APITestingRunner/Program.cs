@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more informati
 using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
+using APITestingRunner.IoOperations;
 using Microsoft.Extensions.Logging;
 using System.CommandLine;
 using System.Reflection;

@@ -5,7 +5,7 @@ namespace APITestingRunner.Unit.Tests
 {
 
     [TestClass]
-    public class DataComparrisonTests
+    public class DataComparisonTests
     {
 
 		//TODO: Review together tests for any that shoudl be type-safe
@@ -16,7 +16,7 @@ namespace APITestingRunner.Unit.Tests
             var fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "", null, null, null, true, null);
             var expectedResult = ComparissonStatus.Matching;
 
-            var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
+            var result = DataComparison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
         }
 
@@ -28,7 +28,7 @@ namespace APITestingRunner.Unit.Tests
             var expectedResult = ComparissonStatus.Different;
 
 
-            var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
+            var result = DataComparison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
         }
 
@@ -39,7 +39,7 @@ namespace APITestingRunner.Unit.Tests
             var fileResult = new ApiCallResult(System.Net.HttpStatusCode.Accepted, "test", null, null, null, true, null);
             var expectedResult = ComparissonStatus.Different;
 
-            var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
+            var result = DataComparison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
         }
 
@@ -50,7 +50,7 @@ namespace APITestingRunner.Unit.Tests
             var fileResult = new ApiCallResult(System.Net.HttpStatusCode.OK, "test", null, null, null, false, null);
             var expectedResult = ComparissonStatus.Different;
 
-            var result = DataComparrison.CompareAPiResults(apiResult, fileResult);
+            var result = DataComparison.CompareAPiResults(apiResult, fileResult);
             _ = result.Should().Be(expectedResult);
         }
     }

@@ -1,5 +1,6 @@
 using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
+using APITestingRunner.IoOperations;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,7 +11,7 @@ using WireMock.Server;
 namespace APITestingRunner.Unit.Tests
 {
 
-	[TestClass]
+    [TestClass]
 	public class TestDifferentRequestTypes : TestBase
 	{
 		private WireMockServer? server;

@@ -1,6 +1,7 @@
 ﻿using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
 using APITestingRunner.Database;
+using APITestingRunner.IoOperations;
 using FluentAssertions;
 
 namespace APITestingRunner.Unit.Tests.DataTests

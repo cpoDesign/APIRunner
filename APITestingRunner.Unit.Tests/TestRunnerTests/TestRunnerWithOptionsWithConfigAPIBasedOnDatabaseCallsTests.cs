@@ -1,6 +1,7 @@
 ﻿using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
 using APITestingRunner.Database;
+using APITestingRunner.IoOperations;
 using FluentAssertions;
 using System.Reflection;
 using WireMock.Matchers;
@@ -74,20 +75,18 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
                 RequestBody = null,
-                HeaderParam = new List<Param> {
-                                new Param("accept","application/json")
-                              },
-                UrlParam = new List<Param>
-            {
+                HeaderParam = [
+                    new Param("accept","application/json")
+                ],
+                UrlParam = [
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
-                  },
+                ],
                 DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId from dbo.sampleTable;",
-                DBFields = new List<Param>
-            {
+                DBFields = [
                     new Param("bindingId", "bindingId"),
-                  },
+                ],
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.None,
                 ConfigMode = TesterConfigMode.Run,
@@ -100,7 +99,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count().Should().Be(6);
+            _ = logger.Messages.Count.Should().Be(6);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -137,20 +136,18 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
                 RequestBody = null,
-                HeaderParam = new List<Param> {
-                                new Param("accept","application/json")
-                              },
-                UrlParam = new List<Param>
-            {
+                HeaderParam = [
+                    new Param("accept","application/json")
+                ],
+                UrlParam = [
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
-                  },
+                ],
                 DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId from dbo.sampleTable;",
-                DBFields = new List<Param>
-            {
+                DBFields = [
                     new Param("bindingId", "bindingId"),
-                  },
+                ],
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.FailuresOnly,
                 ConfigMode = TesterConfigMode.Capture,
@@ -163,7 +160,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count().Should().Be(6);
+            _ = logger.Messages.Count.Should().Be(6);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -213,20 +210,19 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
                 RequestBody = null,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                     new Param("accept", "application/json")
-                },
-                UrlParam = new List<Param> {
+                ],
+                UrlParam = [
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
-                },
+                ],
                 DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select id as bindingId, RecordType as fileRecordType from dbo.sampleTable where id in (1,3)",
-                DBFields = new List<Param>
-            {
+                DBFields = [
                     new Param("bindingId", "bindingId"),
                     new Param("fileRecordType", "fileRecordType"),
-                  },
+                ],
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.All,
                 ResultFileNamePattern = "{fileRecordType}-{bindingId}",
@@ -240,7 +236,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count().Should().Be(5);
+            _ = logger.Messages.Count.Should().Be(5);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -270,7 +266,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count().Should().Be(6);
+            _ = logger.Messages.Count.Should().Be(6);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -311,16 +307,15 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast/{bindingId}",
                 RequestBody = null,
-                HeaderParam = new List<Param> {
-                                new Param("accept","application/json")
-                              },
-                UrlParam = null,
+                HeaderParam = [
+                    new Param("accept","application/json")
+                ],
+                UrlParam = null!,
                 DBConnectionString = _dbConnectionStringForTests,
                 DBQuery = "select top 1 id as bindingId from dbo.sampleTable;",
-                DBFields = new List<Param>
-            {
+                DBFields = [
                     new Param("bindingId", "bindingId"),
-                  },
+                ],
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.None,
                 ConfigMode = TesterConfigMode.Run,
@@ -333,7 +328,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count().Should().Be(4);
+            _ = logger.Messages.Count.Should().Be(4);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");

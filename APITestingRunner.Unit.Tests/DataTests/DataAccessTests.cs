@@ -2,6 +2,7 @@
 using APITestingRunner.Configuration;
 using APITestingRunner.Database;
 using APITestingRunner.Exceptions;
+using APITestingRunner.IoOperations;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;

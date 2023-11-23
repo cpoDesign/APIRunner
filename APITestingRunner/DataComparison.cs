@@ -4,7 +4,7 @@ using APITestingRunner.ApiRequest;
 
 namespace APITestingRunner
 {
-    public class DataComparrison
+    public class DataComparison
     {
         public static ComparissonStatus CompareAPiResults(ApiCallResult apiCallResult, ApiCallResult fileSourceResult)
         {

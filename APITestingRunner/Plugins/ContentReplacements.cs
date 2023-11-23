@@ -16,6 +16,8 @@ namespace APITestingRunner.Plugins
 
         string IPlugin.Name => "ContentReplacements";
 
+
+        //TODO: Review this pattern - need reason not to put this into the constructor - which improves the code tightness
         public void ApplyConfig(ref IConfig config, ILogger logger)
         {
             ArgumentNullException.ThrowIfNull(config, nameof(config));
@@ -46,18 +48,13 @@ namespace APITestingRunner.Plugins
 
         private List<ContentReplacement> ApplySavedFilter(bool filterConfigurationByStoreInFile)
         {
-            if (_config.ContentReplacements == null) return [];
+            if (_config.ContentReplacements == null)
+                return [];
 
-            if (filterConfigurationByStoreInFile)
-            {
-                return _config.ContentReplacements.Where(x => x.StoreInFile).ToList();
-            }
-            else
-            {
+            if (!filterConfigurationByStoreInFile)
                 return _config.ContentReplacements.ToList();
-            }
+
+            return _config.ContentReplacements.Where(x => x.StoreInFile).ToList();
         }
     }
-
-
 }

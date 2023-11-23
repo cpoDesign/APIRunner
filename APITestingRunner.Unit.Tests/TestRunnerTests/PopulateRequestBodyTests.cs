@@ -1,11 +1,12 @@
 ﻿using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
+using APITestingRunner.IoOperations;
 using FluentAssertions;
 
 namespace APITestingRunner.Unit.Tests
 {
-	[TestClass]
-    public class PopulateRequestBody_Tests
+    [TestClass]
+    public class PopulateRequestBodyTests
     {
         [TestMethod]
         public void PopulateRequestBody_ShouldThrowExcpetion_becauseOfconfig()
@@ -13,9 +14,10 @@ namespace APITestingRunner.Unit.Tests
             Action action = () => TestRunner.PopulateRequestBody(null, new Database.DataQueryResult()
             {
                 RowId = 1,
-                Results = new List<KeyValuePair<string, string>> {
-                new KeyValuePair<string, string>("requestBody","JoeDoe"),
-                new KeyValuePair<string, string>("bindingId", "3") }
+                Results = [
+                    new KeyValuePair<string, string>("requestBody","JoeDoe"),
+                    new KeyValuePair<string, string>("bindingId", "3") 
+                ]
             });
 
             _ = action.Should().Throw<ArgumentException>().WithMessage("Value cannot be null. (Parameter 'config')");
@@ -31,12 +33,8 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
                 RequestBody = null,
-                HeaderParam = new List<Param>
-                {
-                },
-                UrlParam = new List<Param>
-                {
-                },
+                HeaderParam = [],
+                UrlParam = [],
                 DBConnectionString = null,
                 DBQuery = "select id as bindingId, userName as requestBody from dbo.sampleTable where id in (1,3)",
                 DBFields = null,
@@ -67,20 +65,19 @@ namespace APITestingRunner.Unit.Tests
                 CompareUrlPath = string.Empty,
                 UrlPath = "/WeatherForecast",
                 RequestBody = request,
-                HeaderParam = new List<Param> {
+                HeaderParam = [
                     new Param("accept", "application/json")
-                },
-                UrlParam = new List<Param> {
+                ],
+                UrlParam = [
                     new Param("urlKey", "configKey"),
                     new Param("id", "bindingId")
-                },
+                ],
                 DBConnectionString = null,
                 DBQuery = "select id as bindingId, userName as requestBody from dbo.sampleTable where id in (1,3)",
-                DBFields = new List<Param>
-                   {
+                DBFields = [
                     new Param("bindingId", "bindingId"),
                     new Param("requestBody", "requestBody"),
-                  },
+                ],
                 RequestType = RequestType.GET,
                 ResultsStoreOption = StoreResultsOption.All,
                 ResultFileNamePattern = "{fileRecordType}-{bindingId}",
@@ -91,9 +88,10 @@ namespace APITestingRunner.Unit.Tests
             var actual = TestRunner.PopulateRequestBody(config, new Database.DataQueryResult()
             {
                 RowId = 1,
-                Results = new List<KeyValuePair<string, string>> {
-                new KeyValuePair<string, string>("requestBody","JoeDoe"),
-                new KeyValuePair<string, string>("bindingId", "3") }
+                Results = [
+                    new KeyValuePair<string, string>("requestBody","JoeDoe"),
+                    new KeyValuePair<string, string>("bindingId", "3") 
+                ]
             });
 
             Assert.AreEqual(expected, actual);

@@ -1,4 +1,5 @@
 ﻿using APITestingRunner.Configuration;
+using APITestingRunner.IoOperations;
 using APITestingRunner.Plugins;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -65,14 +66,14 @@ namespace APITestingRunner.Unit.Tests.Plugins
                 ConfigMode = TesterConfigMode.Run,
                 OutputLocation = DirectoryServices.AssemblyDirectory,
                 ResultFileNamePattern = null,
-                ContentReplacements = new ContentReplacement[] {
+                ContentReplacements = [
                     new ContentReplacement
                     {
                         From = "Test",
                         To = "Demo",
                         StoreInFile = true,
                     }
-                }
+                ]
             };
 
             var plugin = new ContentReplacements();
@@ -105,7 +106,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                 ConfigMode = TesterConfigMode.Run,
                 OutputLocation = DirectoryServices.AssemblyDirectory,
                 ResultFileNamePattern = null,
-                ContentReplacements = new ContentReplacement[] {
+                ContentReplacements = [
                     new ContentReplacement
                     {
                         From = "Test",
@@ -118,7 +119,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                         To = "Dog",
                         StoreInFile = true,
                     }
-                }
+                ]
             };
 
             var plugin = new ContentReplacements();
@@ -151,7 +152,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                 ConfigMode = TesterConfigMode.Run,
                 OutputLocation = DirectoryServices.AssemblyDirectory,
                 ResultFileNamePattern = null,
-                ContentReplacements = new ContentReplacement[] {
+                ContentReplacements = [
                     new ContentReplacement
                     {
                         From = "TestCat",
@@ -164,7 +165,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                         To = "Dog",
                         StoreInFile = true,
                     }
-                }
+                ]
             };
 
             var plugin = new ContentReplacements();
@@ -197,7 +198,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                 ConfigMode = TesterConfigMode.Run,
                 OutputLocation = DirectoryServices.AssemblyDirectory,
                 ResultFileNamePattern = null,
-                ContentReplacements = new ContentReplacement[] {
+                ContentReplacements = [
                     new ContentReplacement
                     {
                         From = "TestCat",
@@ -216,7 +217,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                         To = "failing test",
                         StoreInFile = false,
                     }
-                }
+                ]
             };
 
             var plugin = new ContentReplacements();
@@ -249,7 +250,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                 ConfigMode = TesterConfigMode.Run,
                 OutputLocation = DirectoryServices.AssemblyDirectory,
                 ResultFileNamePattern = null,
-                ContentReplacements = new ContentReplacement[] {
+                ContentReplacements = [
                     new ContentReplacement
                     {
                         From = "TestCat",
@@ -268,7 +269,7 @@ namespace APITestingRunner.Unit.Tests.Plugins
                         To = "fullReplace",
                         StoreInFile = false,
                     }
-                }
+                ]
             };
 
             var plugin = new ContentReplacements();

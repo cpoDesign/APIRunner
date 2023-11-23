@@ -1,6 +1,7 @@
 ﻿using APITestingRunner.ApiRequest;
 using APITestingRunner.Configuration;
 using APITestingRunner.Database;
+using APITestingRunner.IoOperations;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using WireMock.ResponseBuilders;
@@ -277,11 +278,9 @@ namespace APITestingRunner.Unit.Tests
         [DataRow(500, "fail", StoreResultsOption.All, true)]
         public async Task CreateConfigForSingleAPICall_ShouldValidateStoreOptionsBaseOnAPiResult(int statusCode, string determination, StoreResultsOption storeOption, bool directoryAndFileExists)
         {
-            _ = server ?? throw new ArgumentNullException(nameof(server));
+            ArgumentNullException.ThrowIfNull(nameof(server));
 
-            server.Given(
-                  WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet()
-              )
+            server!.Given(WireMock.RequestBuilders.Request.Create().WithPath("/WeatherForecast").UsingGet())
               .RespondWith(
                   Response.Create()
                       .WithStatusCode(statusCode)
