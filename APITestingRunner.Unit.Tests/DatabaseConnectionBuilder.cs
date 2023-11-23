@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace APITestingRunner.Unit.Tests
 {
-	internal class DatabaseHelper
+	internal class DatabaseConnectionBuilder
 	{
 		public static string BuildLocalhostDatabaseConnection(string server = "127.0.0.1", string dbName = "test", string userId = "sa", string password = "<YourStrong@Passw0rd>", bool trustServerCertificate = true)
 		{
@@ -15,9 +15,6 @@ namespace APITestingRunner.Unit.Tests
 		public static string BuildFileDatabaseConnection(string fileLocation, string fileName)
 		{
             Debug.WriteLine($"|||DEBUG||| BuildFileDatabaseConnection - fileLocation: {fileLocation}, fileName: {fileName}");
-			//var pavhardcoded = "Data Source=(LocalDB)\\MSSQLLocalDB; AttachDbFilename = C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf; Integrated Security = True";
-			//var benhardcoded= "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=d:\\_dev\\marsvarc\\APITestingRunner\\APITestingRunner.Unit.Tests\\SampleDb.mdf;Integrated Security = True";
-
 			var buildpath = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={fileLocation}\\{fileName}; Integrated Security=True";
 			var dbConnection = buildpath;
 			Debug.WriteLine($"|||DEBUG||| BuildFileDatabaseConnection - dbConnection: {dbConnection}");

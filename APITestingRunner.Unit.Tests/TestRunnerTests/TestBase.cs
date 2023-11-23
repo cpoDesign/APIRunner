@@ -14,7 +14,7 @@ namespace APITestingRunner.Unit.Tests
         internal void Initialize()
         {
             var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-            _dbConnectionStringForTests = DatabaseHelper.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
+            _dbConnectionStringForTests = DatabaseConnectionBuilder.BuildFileDatabaseConnection(filePath, "SampleDb.mdf");
 
             // TODO: for now update this related to your checkout location and support LUT
             Debug.WriteLine(_dbConnectionStringForTests);
