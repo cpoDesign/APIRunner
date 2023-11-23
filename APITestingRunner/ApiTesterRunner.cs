@@ -9,6 +9,7 @@
 using APITestingRunner.Configuration;
 using APITestingRunner.Plugins;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace APITestingRunner
 {
@@ -40,18 +41,19 @@ namespace APITestingRunner
             _ = _logger ?? throw new ArgumentNullException(nameof(_logger));
 
             var configSettings = await ConfigurationManager.GetConfigAsync(pathConfigJson);
-            TestRunner testRunner = new(_logger);
-            testRunner.ApplyConfig(configSettings);
+            var testRunner = await this.RunTestWithPlugins(configSettings);
+            //TestRunner testRunner = new(_logger);
+            //testRunner.ApplyConfig(configSettings);
 
-            try
-            {
-                testRunner = await testRunner
-                    .RunTestsAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
+            //try
+            //{
+            //    testRunner = await testRunner
+            //        .RunTestsAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex.Message);
+            //}
 
             _ = await testRunner.PrintResultsSummary();
             return;
@@ -61,11 +63,30 @@ namespace APITestingRunner
         {
             _ = _logger ?? throw new ArgumentNullException("_logger");
 
-            TestRunner testRunner = new(_logger);
-            testRunner.ApplyConfig(config);
-            testRunner.RegisterPlugin(this.PluginList);
-            return await testRunner.RunTestsAsync();
+            return await RunTestWithPlugins(config);
+        }
 
+        private async Task<TestRunner> RunTestWithPlugins(Config config)
+        {
+            TestRunner testRunner = new(_logger);
+
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
+                stopwatch.Start();
+
+                testRunner.ApplyConfig(config);
+                testRunner.RegisterPlugin(this.PluginList);
+                _ = await testRunner.RunTestsAsync();
+                stopwatch.Stop();
+                _logger.LogInformation($"Total process took: {stopwatch.Elapsed:mm\\:ss\\.ff}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error caught: {ex.Message}", ex);
+            }
+
+            return testRunner;
         }
     }
 }

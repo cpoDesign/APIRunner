@@ -3,7 +3,6 @@ using APITestingRunner.Configuration;
 using APITestingRunner.Database;
 using APITestingRunner.IoOperations;
 using FluentAssertions;
-using System.Reflection;
 using WireMock.Matchers;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -99,7 +98,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count.Should().Be(6);
+            _ = logger.Messages.Count.Should().Be(7);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -160,7 +159,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count.Should().Be(6);
+            _ = logger.Messages.Count.Should().Be(7);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -236,17 +235,17 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count.Should().Be(5);
+            _ = logger.Messages.Count.Should().Be(6);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
             _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
             _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json NewFile");
             _ = logger.Messages[4].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json NewFile");
+            _ = logger.Messages[5].Item2.Should().Contain("Total process took:");
 
-
+            // file validation
             var expectedFilePath = DirectoryServices.AssemblyDirectory;
-
             var testDirectory = Path.Combine(expectedFilePath, TestConstants.TestOutputDirectory);
             _ = Directory.Exists(testDirectory).Should().BeTrue(because: $"directory is: {testDirectory}");
 
@@ -266,7 +265,7 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count.Should().Be(6);
+            _ = logger.Messages.Count.Should().Be(7);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
@@ -274,6 +273,7 @@ namespace APITestingRunner.Unit.Tests
             _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json Matching");
             _ = logger.Messages[4].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success Results/request-software-2.json NewFile");
             _ = logger.Messages[5].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json Matching");
+            _ = logger.Messages[6].Item2.Should().Contain("Total process took:");
 
             _ = Path.Combine(testDirectory, "request-music-1.json");
             _ = Path.Combine(testDirectory, "request-software-2.json");
@@ -286,7 +286,6 @@ namespace APITestingRunner.Unit.Tests
         [TestCategory("dbcapture")]
         public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldAppendIdToUrl()
         {
-
             server.Given(
                WireMock.RequestBuilders.Request.Create()
                .WithPath("/WeatherForecast/1")
@@ -328,12 +327,13 @@ namespace APITestingRunner.Unit.Tests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count.Should().Be(4);
+            _ = logger.Messages.Count.Should().Be(5);
 
             _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
             _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
             _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
             _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast/1 200 success");
+            _ = logger.Messages[4].Item2.Should().Contain("Total process took:");
         }
 
 

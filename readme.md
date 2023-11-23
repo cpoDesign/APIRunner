@@ -4,12 +4,11 @@ TODO:
 command line options
 
 1. Create a status report
-    1. Add analysis on how many ware successfull and how many not
+    1. Add analysis on how many ware successful and how many not
 1. 1. Compatibility 
 we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
 
-2. Add total time spend running the tool
 1. 1. when run exe display basic instance
 1. Compatibility -> we use UTF-32 to ensure maximum compatibility as the application has to support Chinese traditional and Chinese simplified. Traditional UTF-8 does not support it.
 
@@ -145,7 +144,7 @@ api base url: http://localhost:7071/
 ```
 
 
-## Docker SQL test
+## Setting up docker container as data source
 
 Note: out of date needs more columns to support test cases
 
