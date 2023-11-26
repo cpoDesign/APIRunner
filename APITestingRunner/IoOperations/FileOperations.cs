@@ -17,20 +17,29 @@ namespace APITestingRunner.IoOperations
         /// <param name="path"></param>
         /// <param name="apiCallResult"></param>
         /// <returns></returns>
-        internal static async Task WriteFile(string path, string fileContent)
+        public static async Task WriteFile(string path, string fileContent)
         {
-            await File.WriteAllTextAsync(path, fileContent);
+            await File.WriteAllTextAsync(path, fileContent, System.Text.Encoding.UTF32);
         }
 
-        internal static bool ValidateIfFileExists(string fileName)
+        /// <summary>
+        /// Validates if file exists.
+        /// </summary>
+        /// <param name="fileWithPath">File with path.</param>
+        /// <returns>A boolean result.</returns>
+        public static bool ValidateIfFileExists(string fileWithPath)
         {
-            return File.Exists(fileName);
+            return File.Exists(fileWithPath);
         }
 
-        public static string GetFileData(string filePath)
+        /// <summary>
+        /// Gets file data for the path.
+        /// </summary>
+        /// <param name="fileWithPath"></param>
+        /// <returns>Content of the file</returns>
+        public static string GetFileData(string fileWithPath)
         {
-            return File.ReadAllText(filePath, encoding: System.Text.Encoding.UTF8).Trim();
+            return File.ReadAllText(fileWithPath, encoding: System.Text.Encoding.UTF32).Trim();
         }
-
     }
 }

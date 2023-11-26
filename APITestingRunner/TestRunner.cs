@@ -69,7 +69,7 @@ namespace APITestingRunner
         {
             if (_config == null) throw new NullReferenceException("Config should always be populated");
 
-            foreach (var plugin in this.plugins)
+            foreach (var plugin in plugins)
             {
                 plugin.ApplyConfig(ref _config, _logger);
             }
@@ -430,7 +430,7 @@ namespace APITestingRunner
             var fileCompareStatus = ComparissonStatus.NewFile;
             var result = new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
 
-            if (_config.ConfigMode == TesterConfigMode.Capture || _config.ConfigMode == TesterConfigMode.CaptureAndCompare)
+            if (_config.ConfigMode is TesterConfigMode.Capture or TesterConfigMode.CaptureAndCompare)
             {
                 if (_config.ResultsStoreOption == StoreResultsOption.All || (_config.ResultsStoreOption == StoreResultsOption.FailuresOnly && !apiCallResult.IsSuccessStatusCode))
                 {
@@ -586,7 +586,7 @@ namespace APITestingRunner
 
             foreach (var plugin in availablePlugins)
             {
-                this.plugins.Add(plugin);
+                plugins.Add(plugin);
             }
         }
 
