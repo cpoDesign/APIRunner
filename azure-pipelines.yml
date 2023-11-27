@@ -39,10 +39,9 @@ steps:
 
   - task: DotNetCoreCLI@2
     inputs:
-      command: 'publish'
+      command: 'build'
       publishWebProjects: false
       projects: '**/*APITestingRunner.csproj'
-      modifyOutputPath: true
       arguments: '-c "Release" /p:OutputPath="$(build.artifactStagingDirectory)"'
 
   # - task: VSBuild@1
