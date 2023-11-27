@@ -62,7 +62,7 @@ steps:
 # - script: echo current version is $(GitVersion.SemVer)
 #   displayName: 'Display calculated version'
 
-- script: |
+  - script: |
       echo "Major: $(version.major)"
       echo "Minor: $(version.minor)"
       echo "Patch: $(version.patch)"
@@ -95,7 +95,7 @@ steps:
       echo "CommitsSinceVersionSourcePadded: $(version.commitsSinceVersionSourcePadded)"
       echo "UncommittedChanges: $(version.uncommittedChanges)"
       echo "CommitDate: $(version.commitDate)"
-  displayName: Display GitVersion outputs (step output)
+    displayName: Display GitVersion outputs (step output)
   
 # - task: GitHubRelease@1
 #   inputs:
