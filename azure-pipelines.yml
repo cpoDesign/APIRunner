@@ -1,7 +1,4 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+## depends on: https://marketplace.visualstudio.com/items?itemName=gittools.gittools
 
 name: $(date:yyyyMMdd)$(rev:.r)-$(Build.SourceBranchName)-$(GitVersion.SemVer)
 
@@ -16,11 +13,11 @@ variables:
   parameters.semVer.value: $(GitVersion.AssemblySemVer)
 
 steps:
-- task: NuGetToolInstaller@1
+# - task: NuGetToolInstaller@1
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+# - task: NuGetCommand@2
+#   inputs:
+#     restoreSolution: '$(solution)'
 
 # - task: VSBuild@1
 #   inputs:
@@ -43,16 +40,19 @@ steps:
       $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
       $sha = $commits[0].sha
       Write-Host "##vso[task.setvariable variable=sha;]$sha"
-# - task: gitversion/setup@0
-#   displayName: Install GitVersion
-#   inputs:
-#     versionSpec: "5.10.x"
 
-# - task: gitversion/execute@0
-#   displayName: 'Calculate SemVer'
+- task: gitversion/setup@0
+  displayName: Install GitVersion
+  inputs:
+    versionSpec: '5.x'
+
+
+- task: gitversion/execute@0
+  displayName: 'Calculate SemVer'
   
-# - script: echo current version is $(GitVersion.SemVer)
-#   displayName: 'Display calculated version'
+- script: echo current version is $(GitVersion.SemVer)
+  displayName: 'Display calculated version'
+  
 # - task: GitHubRelease@1
 #   inputs:
 #     gitHubConnection: 'github.com_cpoDesign'
