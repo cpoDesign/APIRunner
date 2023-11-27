@@ -21,9 +21,9 @@ steps:
  
  - task: gitversion/setup@0
    displayName: GitVersion Setup
-    inputs:
-      versionSpec: 5.x
-      updateAssemblyInfo: true
+   inputs:
+    versionSpec: 5.x
+    updateAssemblyInfo: true
  - task: gitversion/execute@0
    displayName: GitVersion Execute
 
