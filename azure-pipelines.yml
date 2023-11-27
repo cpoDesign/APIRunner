@@ -40,7 +40,15 @@ steps:
       $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
       $sha = $commits[0].sha
       Write-Host "##vso[task.setvariable variable=sha;]$sha"
-
+- task: gitversion/setup@0
+  displayName: 'Install GitTools'
+  inputs:
+  versionSpec: '5.3.x'
+- task: gitversion/execute@0
+  displayName: 'Calculate SemVer'
+  
+- script: echo current version is $(GitVersion.SemVer)
+  displayName: 'Display calculated version'
 - task: GitHubRelease@1
   inputs:
     gitHubConnection: 'github.com_cpoDesign'
@@ -48,7 +56,7 @@ steps:
     action: 'create'
     target: '$(sha)'
     tagSource: 'userSpecifiedTag'
-    tag: '$(tag)'
-    title: 'v$(tag)'
+    tag: '$(GitVersion.SemVer)'
+    title: 'v$(GitVersion.SemVer)'
     assets: '$(Build.ArtifactStagingDirectory)\release\*.exe'
     addChangeLog: false
