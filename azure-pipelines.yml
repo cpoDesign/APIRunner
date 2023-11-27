@@ -37,12 +37,29 @@ steps:
   - script: echo current version is $(GitVersion.SemVer)
     displayName: 'Display calculated version $(GitVersion.SemVer)'
 
+  # - task: DotNetCoreCLI@2
+  #   inputs:
+  #     command: 'build'
+  #     publishWebProjects: false
+  #     projects: '**/*APITestingRunner.csproj'
+  #     arguments: '-c "Release" /p:OutputPath="$(build.artifactStagingDirectory)"'
+
   - task: DotNetCoreCLI@2
     inputs:
       command: 'build'
       publishWebProjects: false
       projects: '**/*APITestingRunner.csproj'
-      arguments: '-c "Release" /p:OutputPath="$(build.artifactStagingDirectory)"'
+      arguments: '--output "$(build.artifactStagingDirectory)" --runtime win-x64 --configuration Release -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true'
+
+# dotnet publish --output "c:/temp/myapp" --runtime win-x64 --configuration Release -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
+
+
 
   # - task: VSBuild@1
   #   inputs:
