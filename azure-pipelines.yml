@@ -37,10 +37,18 @@ steps:
   - script: echo current version is $(GitVersion.SemVer)
     displayName: 'Display calculated version $(GitVersion.SemVer)'
 
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'publish'
+      publishWebProjects: false
+      projects: '**/*APITestingRunner.csproj'
+      modifyOutputPath: false
+      workingDirectory: '$(Build.ArtifactStagingDirectory)\release'
+
   # - task: VSBuild@1
   #   inputs:
   #     solution: '$(solution)'
-  #     msbuildArgs: '/p:DeployOnBuild=true /p:Version=$(version.major).$(version.minor).$(version.patch) /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+  #     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
   #     platform: '$(buildPlatform)'
   #     configuration: '$(buildConfiguration)'
 
@@ -58,44 +66,6 @@ steps:
 #       $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
 #       $sha = $commits[0].sha
 #       Write-Host "##vso[task.setvariable variable=sha;]$sha"
-
-# - script: echo current version is $(GitVersion.SemVer)
-#   displayName: 'Display calculated version'
-
-  - script: |
-      echo "Major: $(version.major)"
-      echo "Minor: $(version.minor)"
-      echo "Patch: $(version.patch)"
-      echo "PreReleaseTag: $(version.preReleaseTag)"
-      echo "PreReleaseTagWithDash: $(version.preReleaseTagWithDash)"
-      echo "PreReleaseLabel: $(version.preReleaseLabel)"
-      echo "PreReleaseNumber: $(version.preReleaseNumber)"
-      echo "WeightedPreReleaseNumber: $(version.weightedPreReleaseNumber)"
-      echo "BuildMetaData: $(version.buildMetaData)"
-      echo "BuildMetaDataPadded: $(version.buildMetaDataPadded)"
-      echo "FullBuildMetaData: $(version.fullBuildMetaData)"
-      echo "MajorMinorPatch: $(version.majorMinorPatch)"
-      echo "SemVer: $(version.semVer)"
-      echo "LegacySemVer: $(version.legacySemVer)"
-      echo "LegacySemVerPadded: $(version.legacySemVerPadded)"
-      echo "AssemblySemVer: $(version.assemblySemVer)"
-      echo "AssemblySemFileVer: $(version.assemblySemFileVer)"
-      echo "FullSemVer: $(version.fullSemVer)"
-      echo "InformationalVersion: $(version.informationalVersion)"
-      echo "BranchName: $(version.branchName)"
-      echo "EscapedBranchName: $(version.escapedBranchName)"
-      echo "Sha: $(version.sha)"
-      echo "ShortSha: $(version.shortSha)"
-      echo "NuGetVersionV2: $(version.nuGetVersionV2)"
-      echo "NuGetVersion: $(version.nuGetVersion)"
-      echo "NuGetPreReleaseTagV2: $(version.nuGetPreReleaseTagV2)"
-      echo "NuGetPreReleaseTag: $(version.nuGetPreReleaseTag)"
-      echo "VersionSourceSha: $(version.versionSourceSha)"
-      echo "CommitsSinceVersionSource: $(version.commitsSinceVersionSource)"
-      echo "CommitsSinceVersionSourcePadded: $(version.commitsSinceVersionSourcePadded)"
-      echo "UncommittedChanges: $(version.uncommittedChanges)"
-      echo "CommitDate: $(version.commitDate)"
-    displayName: Display GitVersion outputs (step output)
   
 # - task: GitHubRelease@1
 #   inputs:
