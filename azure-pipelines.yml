@@ -3,6 +3,7 @@
 # Add steps that publish symbols, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
 
+name: $(date:yyyyMMdd)$(rev:.r)-$(Build.SourceBranchName)-$(GitVersion.SemVer)
 
 pool:
   vmImage: 'windows-latest'
@@ -11,6 +12,8 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  contentVersion: $(GitVersion.AssemblySemVer)
+  parameters.semVer.value: $(GitVersion.AssemblySemVer)
 
 steps:
 - task: NuGetToolInstaller@1
@@ -19,12 +22,12 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+# - task: VSBuild@1
+#   inputs:
+#     solution: '$(solution)'
+#     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+#     platform: '$(buildPlatform)'
+#     configuration: '$(buildConfiguration)'
 
 # - task: VSTest@2
 #   inputs:
@@ -40,10 +43,10 @@ steps:
       $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
       $sha = $commits[0].sha
       Write-Host "##vso[task.setvariable variable=sha;]$sha"
-- task: gitversion/setup@0
-  displayName: Install GitVersion
-  inputs:
-    versionSpec: "5.10.x"
+# - task: gitversion/setup@0
+#   displayName: Install GitVersion
+#   inputs:
+#     versionSpec: "5.10.x"
 
 # - task: gitversion/execute@0
 #   displayName: 'Calculate SemVer'
