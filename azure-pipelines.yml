@@ -51,8 +51,6 @@ steps:
       projects: '**/*APITestingRunner.csproj'
       arguments: '--output "$(build.artifactStagingDirectory)" --runtime win-x64 --configuration Release -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true'
 
-# dotnet publish --output "c:/temp/myapp" --runtime win-x64 --configuration Release -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true
-
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -73,24 +71,24 @@ steps:
 #     platform: '$(buildPlatform)'
 #     configuration: '$(buildConfiguration)'
 
-#GitHubRelease
-# - task: PowerShell@2
-#   displayName: 'Get latest SHA commmit from repo'
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
-#       $sha = $commits[0].sha
-#       Write-Host "##vso[task.setvariable variable=sha;]$sha"
+# GitHubRelease
+  - task: PowerShell@2
+    displayName: 'Get latest SHA commmit from repo'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
+        $sha = $commits[0].sha
+        Write-Host "##vso[task.setvariable variable=sha;]$sha"
   
-# - task: GitHubRelease@1
-#   inputs:
-#     gitHubConnection: 'github.com_cpoDesign'
-#     repositoryName: 'cpoDesign/APITestingRunner'
-#     action: 'create'
-#     target: '$(sha)'
-#     tagSource: 'userSpecifiedTag'
-#     tag: '$(GitVersion.SemVer)'
-#     title: 'v$(GitVersion.SemVer)'
-#     assets: '$(Build.ArtifactStagingDirectory)\release\*.exe'
-#     addChangeLog: true
+  - task: GitHubRelease@1
+    inputs:
+      gitHubConnection: 'github.com_cpoDesign'
+      repositoryName: 'cpoDesign/APITestingRunner'
+      action: 'create'
+      target: '$(sha)'
+      tagSource: 'userSpecifiedTag'
+      tag: '$(GitVersion.SemVer)'
+      title: 'v$(GitVersion.SemVer)'
+      assets: '$(Build.ArtifactStagingDirectory)'
+      addChangeLog: true
