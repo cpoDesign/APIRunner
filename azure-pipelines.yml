@@ -14,18 +14,18 @@ variables:
 
 steps:
  # Needed for GitVersion (fetchDepth field is critical)
- - checkout: self
-   displayName: Git Checkout
-   fetchDepth: 0
-   persistCredentials: true
+  - checkout: self
+    displayName: Git Checkout
+    fetchDepth: 0
+    persistCredentials: true
  
- - task: gitversion/setup@0
-   displayName: GitVersion Setup
-   inputs:
-    versionSpec: 5.x
-    updateAssemblyInfo: true
- - task: gitversion/execute@0
-   displayName: GitVersion Execute
+  - task: gitversion/setup@0
+    displayName: GitVersion Setup
+    inputs:
+      versionSpec: 5.x
+      updateAssemblyInfo: true
+  - task: gitversion/execute@0
+    displayName: GitVersion Execute
 
 # - task: NuGetToolInstaller@1
 
