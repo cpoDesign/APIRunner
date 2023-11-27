@@ -42,8 +42,9 @@ steps:
       command: 'publish'
       publishWebProjects: false
       projects: '**/*APITestingRunner.csproj'
-      modifyOutputPath: false
-      workingDirectory: '$(Build.ArtifactStagingDirectory)\release'
+      modifyOutputPath: true
+      arguments: '-c "Release" /p:OutputPath="$(build.artifactStagingDirectory)\release"'
+      
 
   # - task: VSBuild@1
   #   inputs:
