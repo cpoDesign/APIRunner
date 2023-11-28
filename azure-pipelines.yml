@@ -28,6 +28,7 @@ steps:
     displayName: GitVersion Execute
 
   - task: DotNetCoreCLI@2
+    displayName: Restore packages to all projects
     inputs:
       command: 'restore'
       projects: '**/*.csproj'
@@ -71,8 +72,9 @@ steps:
 #     platform: '$(buildPlatform)'
 #     configuration: '$(buildConfiguration)'
 
-# GitHubRelease
+
   - task: PowerShell@2
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     displayName: 'Get latest SHA commmit from repo'
     inputs:
       targetType: 'inline'
@@ -82,6 +84,7 @@ steps:
         Write-Host "##vso[task.setvariable variable=sha;]$sha"
   
   - task: GitHubRelease@1
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     inputs:
       gitHubConnection: 'github.com_cpoDesign'
       repositoryName: 'cpoDesign/APITestingRunner'
