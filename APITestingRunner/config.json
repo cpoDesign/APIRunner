@@ -1,17 +1,48 @@
 {
-  "UrlBase": "https://localhost:7055",
-  "CompareUrlBase": "",
-  "UrlPath": "/get/{bindingId}",
-  "CompareUrlPath": "",
-  "UrlParam": null,
-  "HeaderParam": [{ "Name": "accept", "value": "application/json" }],
-  "RequestBody": null,
-  "RequestType": 1,
-  "ConfigMode": 3,
-  "ResultsStoreOption": 2,
-  "OutputLocation": "C:\\code\\cpoDesign\\APITestingRunner\\APITestingRunner\\bin\\Release\\net7.0",
-  "DBConnectionString": "Server=127.0.0.1; Database=testdb; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True",
-  "DBQuery": "select id as bindingId from dbo.sampleTable where id = 1",
-  "DBFields": [{ "Name": "bindingId", "value": "bindingId" }],
-  "ResultFileNamePattern": null
+    "UrlBase": "https://integration.christies.com/lotdetails_webapi/api",
+    "CompareUrlBase": "",
+    "UrlPath": "/lots/GetLotDetails?languageid={bindingLanguageId}&objectid={bindingObjectId}&apikey=apiKey&saleroomcode=&geolocation=US",
+    "CompareUrlPath": "",
+    "UrlParam": null,
+    "HeaderParam": [
+        {
+            "Name": "accept",
+            "value": "application/json"
+        }
+    ],
+    "RequestBody": null,
+    "RequestType": 1,
+    "ConfigMode": 3,
+    "ResultsStoreOption": 2,
+    "OutputLocation": "C:\\code\\APITestingRunner\\APITestingRunner\\bin\\Release\\net8.0",
+  "DBConnectionString": null,
+  "DBQuery": "SELECT Objectid as bindingObjectId, 3 as bindingLanguageId from database",
+    "DBFields": [
+        {
+            "Name": "bindingObjectId",
+            "value": "bindingObjectId"
+        },
+        {
+            "Name": "bindingLanguageId",
+            "value": "bindingLanguageId"
+        }
+    ],
+    "ResultFileNamePattern": "lang-{bindingLanguageId}-objId-{bindingObjectId}",
+    "ContentReplacements": [
+        {
+            "From": "https://integration.christies.com/img/",
+            "To": "imageurl",
+            "StoreInFile": true
+        },
+        {
+            "From": "https://integration.christies.com/lot",
+            "To": "loturl",
+            "StoreInFile": true
+        },
+        {
+            "From": "https://www.christies.com/static/images/",
+            "To": "staticimages",
+            "StoreInFile": true
+        }
+    ]
 }
