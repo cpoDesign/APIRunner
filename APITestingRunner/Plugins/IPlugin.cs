@@ -26,6 +26,4 @@ namespace APITestingRunner.Plugins
         /// <returns></returns>
         string ProcessValidation(string value);
     }
-
-
 }

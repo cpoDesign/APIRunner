@@ -201,14 +201,15 @@ namespace APITestingRunner
                 return;
             }
 
-            //         //TODO Pav to fix: restore this functionality
-            //try
-            //{
-            //	client.BaseAddress = new Uri(_config.UrlBase);
-            //}catch (Exception)
-            //{
-            //	Errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
-            //}
+            //TODO Pav to fix: restore this functionality
+            try
+            {
+                client.BaseAddress = new Uri(_config.UrlBase);
+            }
+            catch (Exception)
+            {
+                //Errors.Add($"Failed to parse url base from config.UrlBase: {_config.UrlBase}");
+            }
 
             // update variables from url directly on url
             pathAndQuery = TestRunner.ReplaceValueWithDataSource(pathAndQuery, item);
@@ -285,7 +286,7 @@ namespace APITestingRunner
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
                             result = await ProcessResultCaptureAndCompareIfRequested(
-                                new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode));
+                                new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode) { ResponseContent = content });
                             if (result.DisplayFilePathInLog)
                             {
                                 onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
@@ -296,7 +297,7 @@ namespace APITestingRunner
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
 
-                            result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode));
+                            result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode) { ResponseContent = content });
 
                             if (result.DisplayFilePathInLog)
                             {
@@ -486,16 +487,17 @@ namespace APITestingRunner
                 var fileOperations = new FileOperations();
 
                 var filePath = Path.Combine(resultsDirectory, fileName);
-                var apiResult = JsonSerializer.Serialize(apiCallResult);
 
                 if (plugins != null)
                 {
                     foreach (var plugin in plugins)
                     {
-                        apiResult = plugin.ProcessBeforeSave(apiResult);
+                        apiCallResult.ResponseContent = plugin.ProcessBeforeSave(apiCallResult.ResponseContent);
                     }
                 }
-
+                
+                var apiResult = JsonSerializer.Serialize(apiCallResult);
+                
                 if (FileOperations.ValidateIfFileExists(filePath))
                 {
                     var compareFileData = FileOperations.GetFileData(filePath);

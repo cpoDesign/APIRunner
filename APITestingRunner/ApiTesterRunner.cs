@@ -42,18 +42,6 @@ namespace APITestingRunner
 
             var configSettings = await ConfigurationManager.GetConfigAsync(pathConfigJson);
             var testRunner = await this.RunTestWithPlugins(configSettings);
-            //TestRunner testRunner = new(_logger);
-            //testRunner.ApplyConfig(configSettings);
-
-            //try
-            //{
-            //    testRunner = await testRunner
-            //        .RunTestsAsync();
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError(ex.Message);
-            //}
 
             _ = await testRunner.PrintResultsSummary();
             return;

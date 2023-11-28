@@ -19,7 +19,7 @@ namespace APITestingRunner.IoOperations
         /// <returns></returns>
         public static async Task WriteFile(string path, string fileContent)
         {
-            await File.WriteAllTextAsync(path, fileContent, System.Text.Encoding.UTF32);
+            await File.WriteAllTextAsync(path, fileContent, System.Text.Encoding.UTF8);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace APITestingRunner.IoOperations
         /// <returns>Content of the file</returns>
         public static string GetFileData(string fileWithPath)
         {
-            return File.ReadAllText(fileWithPath, encoding: System.Text.Encoding.UTF32).Trim();
+            return File.ReadAllText(fileWithPath, encoding: System.Text.Encoding.UTF8).Trim();
         }
     }
 }

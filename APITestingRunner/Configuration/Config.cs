@@ -110,5 +110,4 @@ namespace APITestingRunner.Configuration
         /// </summary>
         public bool StoreInFile { get; set; }
     }
-
 }

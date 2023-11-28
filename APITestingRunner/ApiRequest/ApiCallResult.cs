@@ -23,5 +23,6 @@ namespace APITestingRunner.ApiRequest
         DataQueryResult? Item,
         bool IsSuccessStatusCode,
         List<string>? CompareResults = null)    {
+        public required string ResponseContent { get; set; }
     }
 }
