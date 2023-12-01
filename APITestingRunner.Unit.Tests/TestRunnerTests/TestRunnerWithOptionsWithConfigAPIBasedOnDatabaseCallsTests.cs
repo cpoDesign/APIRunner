@@ -61,7 +61,8 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
                .UsingGet()
              )
              .RespondWith(
-                 Response.Create()
+                 Response
+                 .Create()
                      .WithStatusCode(200)
                      .WithHeader("Content-Type", "text/plain")
                      .WithBody("Hello, world!")
@@ -333,6 +334,78 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
             _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
             _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast/1 200 success");
             _ = logger.Messages[4].Item2.Should().Contain("Total process took:");
+        }
+
+        [TestMethod]
+        [TestCategory("SimpleAPICallBasedOnDbSource")]
+        [TestCategory("dbcapture")]
+        public async Task ValidateImplementationFor_WireMockTest()
+        {
+            //note https://github.com/WireMock-Net/WireMock.Net/wiki/Scenarios-and-States
+            server.Given(
+               WireMock.RequestBuilders.Request.Create()
+               .WithPath("/WeatherForecast/1")
+
+               .UsingGet()
+             )
+             .RespondWith(new CustomResponse());
+
+            Config apiTesterConfig = new()
+            {
+                UrlBase = "http://localhost:7055",
+                CompareUrlBase = string.Empty,
+                CompareUrlPath = string.Empty,
+                UrlPath = "/WeatherForecast/{bindingId}",
+                RequestBody = null,
+                HeaderParam = [
+                    new Param("accept","application/json")
+                ],
+                UrlParam = null!,
+                DBConnectionString = _dbConnectionStringForTests,
+                DBQuery = "select top 1 id as bindingId from dbo.sampleTable;",
+                DBFields = [
+                    new Param("bindingId", "bindingId"),
+                ],
+                RequestType = RequestType.GET,
+                ResultsStoreOption = StoreResultsOption.All,
+                ConfigMode = TesterConfigMode.CaptureAndCompare,
+                OutputLocation = DirectoryServices.AssemblyDirectory,
+            };
+
+            TestLogger logger = new();
+
+            var testRunner = await new ApiTesterRunner(logger)
+                                .RunTests(apiTesterConfig);
+
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count.Should().Be(5);
+
+            _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
+            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
+            _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
+            _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast/1 200 success");
+            _ = logger.Messages[4].Item2.Should().Contain("Total process took:");
+
+            logger = new();
+            testRunner = await new ApiTesterRunner(logger)
+                             .RunTests(apiTesterConfig);
+
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count.Should().Be(13);
+            var messages = logger.Messages.Select(x => x.Item2).ToList();
+
+            _ = messages.Should().ContainEquivalentOf("Validating database based data source start");
+            _ = messages.Should().ContainEquivalentOf("Found database connection string");
+            _ = messages.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:ContentReplacements");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:ContentReplacements with result Matching");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:StringPlugin");
+            _ = messages.Should().ContainEquivalentOf("Source is different in length: 33 < 44");
+            _ = messages.Should().ContainEquivalentOf("Difference at path '' for property 'Root'");
+            _ = messages.Should().ContainEquivalentOf("Difference at path '.msg' for property 'msg'");
+            _ = messages.Should().ContainEquivalentOf("DiffValue is: Hello from wiremock! <> Hello some error from wiremock!");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:StringPlugin with result Different");
+            _ = messages.Should().ContainEquivalentOf("GET /WeatherForecast/1 500 fail Results/request-1.json Different");
         }
     }
 }
