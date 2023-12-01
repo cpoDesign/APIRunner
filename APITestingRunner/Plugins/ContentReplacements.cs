@@ -1,4 +1,5 @@
-﻿using APITestingRunner.Configuration;
+﻿using APITestingRunner.ApiRequest;
+using APITestingRunner.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner.Plugins
@@ -15,7 +16,6 @@ namespace APITestingRunner.Plugins
         public string Description => "Allow user to apply replacements as part of file storing and comparison.";
 
         string IPlugin.Name => "ContentReplacements";
-
 
         //TODO: Review this pattern - need reason not to put this into the constructor - which improves the code tightness
         public void ApplyConfig(ref IConfig config, ILogger logger)
@@ -48,13 +48,16 @@ namespace APITestingRunner.Plugins
 
         private List<ContentReplacement> ApplySavedFilter(bool filterConfigurationByStoreInFile)
         {
-            if (_config.ContentReplacements == null)
-                return [];
+            return _config.ContentReplacements == null
+                ? (List<ContentReplacement>)([])
+                : !filterConfigurationByStoreInFile
+                ? _config.ContentReplacements.ToList()
+                : _config.ContentReplacements.Where(x => x.StoreInFile).ToList();
+        }
 
-            if (!filterConfigurationByStoreInFile)
-                return _config.ContentReplacements.ToList();
-
-            return _config.ContentReplacements.Where(x => x.StoreInFile).ToList();
+        public ComparisonStatus ProcessComparison(ApiCallResult apiCallResult, ApiCallResult fileSourceResult, ComparisonStatus comparisonStatus)
+        {
+            return comparisonStatus;
         }
     }
 }

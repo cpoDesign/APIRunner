@@ -1,4 +1,5 @@
-﻿using APITestingRunner.Configuration;
+﻿using APITestingRunner.ApiRequest;
+using APITestingRunner.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace APITestingRunner.Plugins
@@ -9,7 +10,12 @@ namespace APITestingRunner.Plugins
         /// Name of the plugin
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Description of the plugin.
+        /// </summary>
         string Description { get; }
+
         void ApplyConfig(ref IConfig config, ILogger logger);
 
         /// <summary>
@@ -18,6 +24,15 @@ namespace APITestingRunner.Plugins
         /// <param name="apiResponseString">String to apply plugin onto</param>
         /// <returns>Returns a processed string.</returns>
         string ProcessBeforeSave(string apiResponseString);
+
+        /// <summary>
+        /// Compare api call results implementation
+        /// </summary>
+        /// <param name="apiCallResult"></param>
+        /// <param name="fileSourceResult"></param>
+        /// <param name="comparisonStatus">Current status of comparing files.</param>
+        /// <returns>ComparisonStatus.</returns>
+        ComparisonStatus ProcessComparison(ApiCallResult apiCallResult, ApiCallResult fileSourceResult, ComparisonStatus comparisonStatus);
 
         /// <summary>
         /// Processes validation string.

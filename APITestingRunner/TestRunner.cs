@@ -286,7 +286,7 @@ namespace APITestingRunner
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
                             result = await ProcessResultCaptureAndCompareIfRequested(
-                                new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode) { ResponseContent = content });
+                                new ApiCallResult() { StatusCode = response.StatusCode, Headers = responseHeaders, Url = pathAndQuery, DataQueryResult = item, IsSuccessStatusCode = response.IsSuccessStatusCode, ResponseContent = content });
                             if (result.DisplayFilePathInLog)
                             {
                                 onScreenMessage += $" {TestConstants.TestOutputDirectory}/{fileName}";
@@ -297,7 +297,7 @@ namespace APITestingRunner
                             fileName = TestRunner.GenerateResultName(item, _config.ResultFileNamePattern);
 
 
-                            result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult(response.StatusCode, content, responseHeaders, pathAndQuery, item, response.IsSuccessStatusCode) { ResponseContent = content });
+                            result = await ProcessResultCaptureAndCompareIfRequested(new ApiCallResult { StatusCode = response.StatusCode, Headers = responseHeaders, Url = pathAndQuery, DataQueryResult = item, IsSuccessStatusCode = response.IsSuccessStatusCode, ResponseContent = content });
 
                             if (result.DisplayFilePathInLog)
                             {
@@ -428,7 +428,7 @@ namespace APITestingRunner
             //TODO: Review what this is for?
             _ = $"{apiCallResult.StatusCode} - {apiCallResult.ResponseContent}";
 
-            var fileCompareStatus = ComparissonStatus.NewFile;
+            var fileCompareStatus = ComparisonStatus.NewFile;
             var result = new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
 
             if (_config.ConfigMode is TesterConfigMode.Capture or TesterConfigMode.CaptureAndCompare)
@@ -470,7 +470,7 @@ namespace APITestingRunner
         /// <param name="apiCallResult"></param>
         /// <param name="captureCompareFile"></param>
         /// <returns>Boolean result checking if file already exists.</returns>
-        private async Task<ComparissonStatus> LogIntoFileAsync(string logLocation, ApiCallResult apiCallResult)
+        private async Task<ComparisonStatus> LogIntoFileAsync(string logLocation, ApiCallResult apiCallResult)
         {
             ArgumentNullException.ThrowIfNull(_config);
 
@@ -482,8 +482,8 @@ namespace APITestingRunner
                     _ = Directory.CreateDirectory(resultsDirectory);
                 }
 
-                var status = ComparissonStatus.NewFile;
-                var fileName = GenerateResultName(apiCallResult.Item, _config.ResultFileNamePattern);
+                var status = ComparisonStatus.NewFile;
+                var fileName = GenerateResultName(apiCallResult.DataQueryResult, _config.ResultFileNamePattern);
                 var fileOperations = new FileOperations();
 
                 var filePath = Path.Combine(resultsDirectory, fileName);
@@ -495,38 +495,41 @@ namespace APITestingRunner
                         apiCallResult.ResponseContent = plugin.ProcessBeforeSave(apiCallResult.ResponseContent);
                     }
                 }
-                
+
                 var apiResult = JsonSerializer.Serialize(apiCallResult);
-                
+
                 if (FileOperations.ValidateIfFileExists(filePath))
                 {
                     var compareFileData = FileOperations.GetFileData(filePath);
-
-                    if (plugins != null)
-                    {
-                        foreach (var plugin in plugins)
-                        {
-                            compareFileData = plugin.ProcessValidation(compareFileData);
-                        }
-                    }
 
                     var fileSourceResult = JsonSerializer.Deserialize<ApiCallResult>(compareFileData);
 
                     if (fileSourceResult is not null)
                     {
-                        status = DataComparison.CompareAPiResults(apiCallResult, fileSourceResult);
+                        // because the file is loaded lets make it same. then plugin can decided to make it different
+                        status = ComparisonStatus.Matching;
+
+                        if (plugins != null)
+                        {
+                            foreach (var plugin in plugins)
+                            {
+                                _logger.LogInformation($"Processing comparison using:{plugin.Name}");
+                                status = plugin.ProcessComparison(fileSourceResult, apiCallResult, status);
+                                _logger.LogInformation($"Processing comparison using:{plugin.Name} with result {status}");
+                            }
+                        }
                     }
                 }
                 else
                 {
                     await FileOperations.WriteFile(filePath, apiResult);
                 }
+
                 return status;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-
                 Errors.Add("Failed to capture logs into a file");
                 throw;
             }
