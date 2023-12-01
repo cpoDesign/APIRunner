@@ -1,0 +1,97 @@
+## depends on: https://marketplace.visualstudio.com/items?itemName=gittools.gittools
+
+name: $(date:yyyyMMdd)$(rev:.r)-$(Build.SourceBranchName)-$(GitVersion.SemVer)
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  contentVersion: $(GitVersion.AssemblySemVer)
+  parameters.semVer.value: $(GitVersion.AssemblySemVer)
+
+steps:
+ # Needed for GitVersion (fetchDepth field is critical)
+  - checkout: self
+    displayName: Git Checkout
+    fetchDepth: 0
+    persistCredentials: true
+ 
+  - task: gitversion/setup@0
+    displayName: GitVersion Setup
+    inputs:
+      versionSpec: 5.x
+      updateAssemblyInfo: true
+  - task: gitversion/execute@0
+    displayName: GitVersion Execute
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore packages to all projects
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+      feedsToUse: 'select'
+      noCache: true
+
+  - script: echo current version is $(GitVersion.SemVer)
+    displayName: 'Display calculated version $(GitVersion.SemVer)'
+
+  # - task: DotNetCoreCLI@2
+  #   inputs:
+  #     command: 'build'
+  #     publishWebProjects: false
+  #     projects: '**/*APITestingRunner.csproj'
+  #     arguments: '-c "Release" /p:OutputPath="$(build.artifactStagingDirectory)"'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      publishWebProjects: false
+      projects: '**/*APITestingRunner.csproj'
+      arguments: '--output "$(build.artifactStagingDirectory)" --runtime win-x64 --configuration Release -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
+
+
+
+  # - task: VSBuild@1
+  #   inputs:
+  #     solution: '$(solution)'
+  #     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+  #     platform: '$(buildPlatform)'
+  #     configuration: '$(buildConfiguration)'
+
+# - task: VSTest@2
+#   inputs:
+#     platform: '$(buildPlatform)'
+#     configuration: '$(buildConfiguration)'
+
+
+  - task: PowerShell@2
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    displayName: 'Get latest SHA commmit from repo'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $commits = Invoke-RestMethod -Method GET -Uri "https://api.github.com/repos/cpoDesign/APITestingRunner/commits"
+        $sha = $commits[0].sha
+        Write-Host "##vso[task.setvariable variable=sha;]$sha"
+  
+  - task: GitHubRelease@1
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    inputs:
+      gitHubConnection: 'github.com_cpoDesign'
+      repositoryName: 'cpoDesign/APITestingRunner'
+      action: 'create'
+      target: '$(sha)'
+      tagSource: 'userSpecifiedTag'
+      tag: '$(GitVersion.SemVer)'
+      title: 'v$(GitVersion.SemVer)'
+      assets: '$(Build.ArtifactStagingDirectory)'
+      addChangeLog: true

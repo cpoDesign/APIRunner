@@ -19,7 +19,9 @@ namespace APITestingRunner
 
 
         private readonly IList<IPlugin> PluginList = new List<IPlugin>(){
-                                new ContentReplacements()
+                                new ContentReplacements(),
+                                new StringComparisonPlugin(),
+                                //new APICallResultComparison(),
                              };
 
 
@@ -41,7 +43,7 @@ namespace APITestingRunner
             _ = _logger ?? throw new ArgumentNullException(nameof(_logger));
 
             var configSettings = await ConfigurationManager.GetConfigAsync(pathConfigJson);
-            var testRunner = await this.RunTestWithPlugins(configSettings);
+            var testRunner = await RunTestWithPlugins(configSettings);
 
             _ = await testRunner.PrintResultsSummary();
             return;
@@ -64,7 +66,7 @@ namespace APITestingRunner
                 stopwatch.Start();
 
                 testRunner.ApplyConfig(config);
-                testRunner.RegisterPlugin(this.PluginList);
+                testRunner.RegisterPlugin(PluginList);
                 _ = await testRunner.RunTestsAsync();
                 stopwatch.Stop();
                 _logger.LogInformation($"Total process took: {stopwatch.Elapsed:mm\\:ss\\.ff}");

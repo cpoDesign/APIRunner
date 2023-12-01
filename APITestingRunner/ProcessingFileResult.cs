@@ -4,14 +4,15 @@ namespace APITestingRunner
 {
     public class ProcessingFileResult
     {
-        public ComparissonStatus ComparissonStatus { get; set; }
+        public ComparisonStatus ComparissonStatus { get; set; }
         public bool DisplayFilePathInLog { get; internal set; }
     }
 
-    public enum ComparissonStatus
+    public enum ComparisonStatus
     {
         NewFile = 1,
         Matching = 2,
         Different = 3,
+        NotApplicable = 4,
     }
 }

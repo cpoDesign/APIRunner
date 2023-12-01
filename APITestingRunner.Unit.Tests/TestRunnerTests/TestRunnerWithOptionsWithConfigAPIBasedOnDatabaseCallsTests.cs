@@ -61,7 +61,8 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
                .UsingGet()
              )
              .RespondWith(
-                 Response.Create()
+                 Response
+                 .Create()
                      .WithStatusCode(200)
                      .WithHeader("Content-Type", "text/plain")
                      .WithBody("Hello, world!")
@@ -187,7 +188,6 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
         [TestCategory("ResultCompare")]
         public async Task ValidateImplementationFor_SingleAPICallAsync_ShouldMakeAnAPICall_WithResult_200_ShouldStoreAllRequest_withFileNamingBasedOnDbResult()
         {
-
             server.Given(
                WireMock.RequestBuilders.Request.Create()
                .WithPath("/WeatherForecast")
@@ -199,7 +199,7 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
                  Response.Create()
                      .WithStatusCode(200)
                      .WithHeader("Content-Type", "application/json")
-                     .WithBody("Hello, world!")
+                     .WithBody("{\"name\":\"John\",\"age\":30,\"city\":\"New York\",\"hobbies\":[{\"type\":\"reading\",\"locations\":[{\"name\":\"Library\",\"hours\":9},{\"name\":\"Park\",\"hours\":5}]}]}")
              );
 
             Config apiTesterConfig = new()
@@ -265,15 +265,16 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
                                 .RunTests(apiTesterConfig);
 
             _ = testRunner.Errors.Should().BeEmpty();
-            _ = logger.Messages.Count.Should().Be(7);
+            var loggerMessages = logger.Messages.Select(x => x.Item2);
+            _ = loggerMessages.Should().HaveCount(17);
 
-            _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
-            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
-            _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
-            _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=1 200 success Results/request-music-1.json Matching");
-            _ = logger.Messages[4].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=2 200 success Results/request-software-2.json NewFile");
-            _ = logger.Messages[5].Item2.Should().ContainEquivalentOf("/WeatherForecast?urlkey=configKey&id=3 200 success Results/request-software-3.json Matching");
-            _ = logger.Messages[6].Item2.Should().Contain("Total process took:");
+            _ = loggerMessages.Should().ContainEquivalentOf("Validating database based data source start");
+            _ = loggerMessages.Should().ContainEquivalentOf("Found database connection string");
+            _ = loggerMessages.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
+            _ = loggerMessages.Should().ContainEquivalentOf("GET /WeatherForecast?urlKey=configKey&id=1 200 success Results/request-music-1.json Matching");
+
+            _ = loggerMessages.Should().ContainEquivalentOf("GET /WeatherForecast?urlKey=configKey&id=2 200 success Results/request-software-2.json NewFile");
+            _ = loggerMessages.Should().ContainEquivalentOf("GET /WeatherForecast?urlKey=configKey&id=3 200 success Results/request-software-3.json Matching");
 
             _ = Path.Combine(testDirectory, "request-music-1.json");
             _ = Path.Combine(testDirectory, "request-software-2.json");
@@ -335,137 +336,76 @@ namespace APITestingRunner.Unit.Tests.TestRunnerTests
             _ = logger.Messages[4].Item2.Should().Contain("Total process took:");
         }
 
-        //[TestMethod]
-        //public async Task CreateConfigForSingleAPICallWithUrlParam()
-        //{
-        //    _ = new Config()
-        //    {
-        //        UrlBase = "https://localhost:7055",
-        //        CompareUrlBase = string.Empty,
-        //        CompareUrlPath = string.Empty,
-        //        UrlPath = "/WeatherForecast/GetWeatherForecastForLocation",
-        //        UrlParam = new List<Param>
-        //  {
-        //    new Param("location","UK")
-        //  },
-        //        HeaderParam = new List<Param> {
-        //  new Param("accept","application/json")
-        //},
-        //        RequestBody = null,
-        //        DBConnectionString = null,
-        //        DBQuery = null,
-        //        DBFields = null,
-        //        RequestType = RequestType.GET,
-        //        ResultsStoreOption = StoreResultsOption.None,
-        //        ConfigMode = TesterConfigMode.Run,
-        //        LogLocation = DirectoryServices.AssemblyDirectory
-        //    };
-        //    Assert.Fail();
-        //}
+        [TestMethod]
+        [TestCategory("SimpleAPICallBasedOnDbSource")]
+        [TestCategory("dbcapture")]
+        public async Task ValidateImplementationFor_WireMockTest()
+        {
+            //note https://github.com/WireMock-Net/WireMock.Net/wiki/Scenarios-and-States
+            server.Given(
+               WireMock.RequestBuilders.Request.Create()
+               .WithPath("/WeatherForecast/1")
 
-        ////[DataRow(StoreResultsOption.None)]
-        ////[DataRow(StoreResultsOption.FailuresOnly)]
-        ////[DataRow(StoreResultsOption.All)]
-        ////public async Task CreateConfigForDatabaseBasedAPICall(StoreResultsOption storeResultsOption)
-        ////{
-        //[TestMethod]
-        //public async Task CreateConfigForDatabaseBasedAPICall()
-        //{
-        //    StoreResultsOption storeResultsOption = StoreResultsOption.All;
+               .UsingGet()
+             )
+             .RespondWith(new CustomResponse());
 
-        //    string sqlCon = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\code\cpoDesign\APITestingRunner\APITestingRunner.Unit.Tests\SampleDb.mdf;Integrated Security=True";
+            Config apiTesterConfig = new()
+            {
+                UrlBase = "http://localhost:7055",
+                CompareUrlBase = string.Empty,
+                CompareUrlPath = string.Empty,
+                UrlPath = "/WeatherForecast/{bindingId}",
+                RequestBody = null,
+                HeaderParam = [
+                    new Param("accept","application/json")
+                ],
+                UrlParam = null!,
+                DBConnectionString = _dbConnectionStringForTests,
+                DBQuery = "select top 1 id as bindingId from dbo.sampleTable;",
+                DBFields = [
+                    new Param("bindingId", "bindingId"),
+                ],
+                RequestType = RequestType.GET,
+                ResultsStoreOption = StoreResultsOption.All,
+                ConfigMode = TesterConfigMode.CaptureAndCompare,
+                OutputLocation = DirectoryServices.AssemblyDirectory,
+            };
 
-        //    Config config = new()
-        //    {
-        //        UrlBase = "https://localhost:7055",
-        //        CompareUrlBase = string.Empty,
-        //        CompareUrlPath = string.Empty,
-        //        UrlPath = "/Data",
-        //        UrlParam = new List<Param>
-        //{
-        //  new Param("urlKey", "test"),
-        //  new Param("id", "sqlId")
-        //},
-        //        HeaderParam = new List<Param> {
-        //  new Param("accept","application/json")
-        //},
-        //        RequestBody = null,
-        //        DBConnectionString = sqlCon,
-        //        DBQuery = "select id as sqlId from dbo.sampleTable;",
-        //        DBFields = new List<Param>
-        //{
-        //  new Param("sqlId", "sqlId")
-        //},
-        //        RequestType = RequestType.GET,
-        //        ResultsStoreOption = storeResultsOption,
-        //        ConfigMode = TesterConfigMode.Run,
-        //        LogLocation = DirectoryServices.AssemblyDirectory
-        //    };
+            TestLogger logger = new();
 
-        //    _ = await IndividualActions.RunTests(config);
-        //}
+            var testRunner = await new ApiTesterRunner(logger)
+                                .RunTests(apiTesterConfig);
 
-        //[TestMethod]
-        //public async Task CreateConfigForDatabaseBasedAPIComparrisonCall()
-        //{
-        //    Config config = new()
-        //    {
-        //        UrlBase = "https://localhost:7055",
-        //        CompareUrlBase = "https://localhost:7055",
-        //        UrlPath = "/Data",
-        //        CompareUrlPath = "/DataV2",
-        //        UrlParam = new List<Param>
-        //{
-        //  new Param("urlKey", "test"),
-        //  new Param("id", "sqlId")
-        //},
-        //        HeaderParam = new List<Param> {
-        //  new Param("accept","application/json")
-        //},
-        //        RequestBody = null,
-        //        DBConnectionString = "Server=127.0.0.1; Database=test; User Id=sa; Password=<YourStrong@Passw0rd>;TrustServerCertificate=True;",
-        //        DBQuery = "select id as sqlId from dbo.sampleTable;",
-        //        DBFields = new List<Param>
-        //{
-        //  new Param("sqlId", "sqlId")
-        //},
-        //        RequestType = RequestType.GET,
-        //        ResultsStoreOption = StoreResultsOption.None,
-        //        ConfigMode = TesterConfigMode.APICompare,
-        //        LogLocation = DirectoryServices.AssemblyDirectory
-        //    };
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count.Should().Be(5);
 
-        //    await IndividualActions.RunTests(config);
-        //}
+            _ = logger.Messages[0].Item2.Should().ContainEquivalentOf("Validating database based data source start");
+            _ = logger.Messages[1].Item2.Should().ContainEquivalentOf("Found database connection string");
+            _ = logger.Messages[2].Item2.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
+            _ = logger.Messages[3].Item2.Should().ContainEquivalentOf("/WeatherForecast/1 200 success");
+            _ = logger.Messages[4].Item2.Should().Contain("Total process took:");
 
-        //[TestMethod]
-        //public async Task CreateConfigForSingleAPICallWithUrlParamAndBodyModel()
-        //{
+            logger = new();
+            testRunner = await new ApiTesterRunner(logger)
+                             .RunTests(apiTesterConfig);
 
-        //    Config config = new()
-        //    {
-        //        UrlBase = "https://localhost:7055",
-        //        CompareUrlBase = string.Empty,
-        //        CompareUrlPath = string.Empty,
-        //        UrlPath = "/datamodel/123456789",
-        //        UrlParam = new List<Param>
-        //  {
-        //    new Param("location","UK")
-        //  },
-        //        HeaderParam = new List<Param> {
-        //  new Param("accept","application/json")
-        //},
-        //        RequestBody = "{Id={sqlId},StaticData=\"data\"}",
-        //        DBConnectionString = null,
-        //        DBQuery = null,
-        //        DBFields = null,
-        //        RequestType = RequestType.GET,
-        //        ResultsStoreOption = StoreResultsOption.None,
-        //        ConfigMode = TesterConfigMode.Run,
-        //        LogLocation = DirectoryServices.AssemblyDirectory
-        //    };
+            _ = testRunner.Errors.Should().BeEmpty();
+            _ = logger.Messages.Count.Should().Be(13);
+            var messages = logger.Messages.Select(x => x.Item2).ToList();
 
-        //    await IndividualActions.RunTests(config);
-        //}
+            _ = messages.Should().ContainEquivalentOf("Validating database based data source start");
+            _ = messages.Should().ContainEquivalentOf("Found database connection string");
+            _ = messages.Should().ContainEquivalentOf("Found database query and db fields. Attempting to load data from database.");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:ContentReplacements");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:ContentReplacements with result Matching");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:StringPlugin");
+            _ = messages.Should().ContainEquivalentOf("Source is different in length: 33 < 44");
+            _ = messages.Should().ContainEquivalentOf("Difference at path '' for property 'Root'");
+            _ = messages.Should().ContainEquivalentOf("Difference at path '.msg' for property 'msg'");
+            _ = messages.Should().ContainEquivalentOf("DiffValue is: Hello from wiremock! <> Hello some error from wiremock!");
+            _ = messages.Should().ContainEquivalentOf("Processing comparison using:StringPlugin with result Different");
+            _ = messages.Should().ContainEquivalentOf("GET /WeatherForecast/1 500 fail Results/request-1.json Different");
+        }
     }
 }
