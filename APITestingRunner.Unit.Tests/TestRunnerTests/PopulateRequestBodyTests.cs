@@ -47,7 +47,7 @@ namespace APITestingRunner.Unit.Tests
 
             Action action = () => TestRunner.PopulateRequestBody(config, null);
 
-            _ = action.Should().Throw<ArgumentException>().WithMessage("Value cannot be null. (Parameter 'dataQueryResult')");
+            _ = action.Should().Throw<ArgumentException>().WithMessage("Value cannot be null. (Parameter 'DataQueryResult')");
         }
 
         [TestMethod]
