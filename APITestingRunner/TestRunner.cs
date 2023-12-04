@@ -425,9 +425,6 @@ namespace APITestingRunner
         {
             ArgumentNullException.ThrowIfNull(_config);
 
-            //TODO: Review what this is for?
-            _ = $"{apiCallResult.StatusCode} - {apiCallResult.ResponseContent}";
-
             var fileCompareStatus = ComparisonStatus.NewFile;
             var result = new ProcessingFileResult { ComparissonStatus = fileCompareStatus };
 
@@ -447,20 +444,7 @@ namespace APITestingRunner
                 }
             }
 
-
-            //if (IsCompareFile) {
-            //    TestResultStatus? existingResult = _resultsStats.FirstOrDefault(x => x.StatusCode == (int)apiCallResult.statusCode);
-            //    if (existingResult == null) {
-            //        _resultsStats.Add(new TestResultStatus { StatusCode = (int)apiCallResult.statusCode, NumberOfResults = 1 });
-            //    } else {
-            //        existingResult.NumberOfResults++;
-            //    }
-
-            //    responses.Add(response);
-            //}
-
             return result;
-
         }
 
         /// <summary>
